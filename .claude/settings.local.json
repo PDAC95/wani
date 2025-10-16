@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/dev/Framework/**)",
+      "Bash(python:*)",
+      "Bash(./venv/Scripts/activate)",
+      "Bash(pip install:*)",
+      "Bash(timeout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enabledMcpjsonServers": [
+    "supabase",
+    "git",
+    "filesystem",
+    "playwright",
+    "upstash",
+    "brave-search",
+    "context7",
+    "sequential-thinking",
+    "memory"
+  ],
+  "enableAllProjectMcpServers": true
+}

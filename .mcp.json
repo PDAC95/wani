@@ -1,0 +1,62 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest"],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_3b6e4de962f54876c173e123fd951984ea45452e"
+      }
+    },
+    "git": {
+      "command": "node",
+      "args": [
+        "./mcp-dependencies/node_modules/@cyanheads/git-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "GIT_WORKING_DIR": "."
+      }
+    },
+    "filesystem": {
+      "command": "node",
+      "args": [
+        "./mcp-dependencies/node_modules/fast-filesystem-mcp/dist/index.js"
+      ],
+      "env": {
+        "FILESYSTEM_ROOT": "."
+      }
+    },
+    "playwright": {
+      "command": "node",
+      "args": ["./mcp-dependencies/node_modules/@playwright/mcp/cli.js"]
+    },
+    "upstash": {
+      "command": "node",
+      "args": [
+        "./mcp-dependencies/node_modules/@upstash/context7-mcp/dist/index.js"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "BSAwgnKG_CSaRfQGNjtui8tY34579WD"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "UPSTASH_VECTOR_REST_URL": "https://internal-monkfish-21014-us1-vector.upstash.io",
+        "UPSTASH_VECTOR_REST_TOKEN": "ABsFMGludGVybmFsLW1vbmtmaXNoLTIxMDE0LXVzMWFkbWluWVdVeE1UbGhNR010WXprM01TMDBPVGM0TFRrMFpHWXRPREUxT1dFNE5tRmtNekk0"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}
