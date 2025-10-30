@@ -1,1811 +1,1639 @@
-# CLAUDE.md - Development Framework Rules
+# CLAUDE.md - Wani Development Rules
 
-## Wani - Remittance & Digital Wallet Platform
-
-**Project Name:** Wani (和 - Peace, Harmony)
-
-## MANDATORY RULES FOR CLAUDE CODE
-
-### 🚀 START OF EACH SESSION
-
-1. **ALWAYS read files in this exact order:**
-
-   ```
-   1. CLAUDE.md (this file - framework rules)
-   2. PRD.md (product requirements)
-   3. PLANNING.md (technical architecture)
-   4. TASKS.md (find next P0 task)
-   5. ERRORS.md (check active blockers)
-   6. PROGRESS.md (review last session)
-   ```
-
-2. **Announce work plan:**
-
-   ```
-   "Files loaded. Working on: [Task #X - Description]
-   Priority: P0/P1/P2
-   Week: [Week X of 8]
-   Estimated time: [X hours]
-   Current focus: [Backend/Frontend/Integration/Testing]"
-   ```
-
-3. **Environment verification checklist:**
-   - [ ] Supabase connection active
-   - [ ] Backend packages installed (pip install -r requirements.txt)
-   - [ ] Frontend packages installed (pnpm install)
-   - [ ] Environment variables configured (.env exists)
-   - [ ] Backend server running (port: 8000)
-   - [ ] Frontend web running (port: 5173)
-   - [ ] Redis running (port: 6379)
-   - [ ] No conflicting processes on ports
-   - [ ] Stellar testnet accessible
-   - [ ] External API keys valid (Circle, Bitso sandbox)
+**Version:** 1.0
+**Last Updated:** 2024-12-20
+**Current Sprint:** Sprint 1
+**Sprint Goal:** "Establecer infraestructura completa del proyecto y permitir que usuarios se registren, autentiquen y tengan wallet Stellar lista."
 
 ---
 
-## 💻 DURING DEVELOPMENT
+## 💻 ENVIRONMENT NOTES
 
-### Code Standards Enforcement
+### Development Environment
+- **Operating System:** Windows
+- **Shell:** PowerShell (NOT Bash)
+- **Backend Port:** 9000 (http://localhost:9000)
+- **Mobile Testing:** Using `npx expo start --tunnel` (computer and phone not on same network)
+- **Important:** All shell commands should be PowerShell-compatible
 
-**Technology Stack Compliance:**
-
-- **Backend:** FastAPI 0.104+ only, Python 3.11+
-- **Frontend Web:** React 18 + Vite + TypeScript
-- **Frontend Mobile:** React Native + Expo SDK 50
-- **Database:** PostgreSQL via Supabase only
-- **Cache:** Redis only
-- **No unauthorized package additions** without updating PLANNING.md
-- Version compatibility checks before any upgrade
-- Follow all conventions in PLANNING.md
-
-**File Naming Conventions:**
-
-```typescript
-// Frontend Web (React + TypeScript)
-components/
-  ├─ Button.tsx                    // PascalCase
-  ├─ TransactionList.tsx
-  └─ BalanceCard.tsx
-
-features/wallet/
-  ├─ components/
-  ├─ hooks/
-  │   └─ useWallet.ts              // camelCase with 'use' prefix
-  └─ services/
-      └─ walletService.ts          // camelCase
-
-types/
-  └─ User.ts                       // PascalCase
-
-utils/
-  └─ formatCurrency.ts             // camelCase
-
-constants/
-  └─ API_CONFIG.ts                 // UPPER_SNAKE_CASE
+### Backend Server Startup (CRITICAL)
+⚠️ **ALWAYS use `run_server.py` to start the backend server:**
+```powershell
+cd backend
+./venv/Scripts/python.exe run_server.py
 ```
 
-```python
-# Backend (FastAPI + Python)
-app/
-├── api/routes/
-│   ├── auth.py                    # snake_case
-│   ├── wallet.py
-│   └── payments.py
-├── models/
-│   ├── user.py                    # snake_case
-│   └── transaction.py
-├── services/
-│   ├── wallet_service.py          # snake_case
-│   └── payment_service.py
-└── integrations/
-    ├── circle.py
-    └── stellar.py
+❌ **DO NOT run uvicorn directly** - it bypasses the Windows event loop configuration required for psycopg3:
+```powershell
+# DON'T DO THIS:
+uvicorn app.main:app --host 0.0.0.0 --port 9000
 ```
 
-```typescript
-// Frontend Mobile (React Native + Expo)
-app/
-├── (auth)/
-│   ├── login.tsx                  # kebab-case for routes
-│   └── register.tsx
-├── (tabs)/
-│   ├── index.tsx
-│   └── send.tsx
-└── _layout.tsx
-```
-
-**API Response Consistency:**
-
-```python
-# All API responses MUST follow this format
-{
-  "success": True,
-  "data": {...},           # Required on success
-  "error": None,           # Required on error
-  "timestamp": "2025-10-15T10:30:00Z"
-}
-
-# Success example
-{
-  "success": True,
-  "data": {
-    "transaction_id": "uuid",
-    "amount": "500.000000",
-    "status": "completed"
-  },
-  "error": None,
-  "timestamp": "2025-10-15T10:30:00Z"
-}
-
-# Error example
-{
-  "success": False,
-  "data": None,
-  "error": {
-    "code": "INSUFFICIENT_BALANCE",
-    "message": "Insufficient balance for transaction",
-    "details": {
-      "balance": "100.50",
-      "required": "500.00"
-    }
-  },
-  "timestamp": "2025-10-15T10:30:00Z"
-}
-```
+**Why:** The backend uses psycopg3 async driver which requires SelectorEventLoop on Windows. The `run_server.py` script configures the event loop BEFORE uvicorn starts, which is essential for proper database connectivity.
 
 ---
 
-### Before Writing Any Code
+## 🎯 CURRENT SPRINT CONTEXT (Updated each sprint)
 
-1. **Announce specific changes:**
+### Sprint Information
 
-   ```
-   "Modifying: backend/app/services/wallet_service.py
-   Function: transfer_money
-   Purpose: Implement P2P transfer with balance validation
-   Dependencies: Decimal from decimal, UUID from uuid
-   Estimated changes: ~50 lines
-   Tests needed: Yes - test_wallet_service.py"
-   ```
+- **Sprint Number:** 1
+- **Sprint Goal:** Establecer infraestructura completa del proyecto y permitir que usuarios se registren, autentiquen y tengan wallet Stellar lista
+- **Sprint Duration:** 2024-12-23 to 2025-01-03 (2 weeks)
+- **Days Remaining:** 10 days
+- **Current Day:** Day 1 of 10
 
-2. **Check ERRORS.md for related issues:**
+### Active User Stories
 
-   - Search for file name
-   - Check for similar error patterns (e.g., "balance", "transfer", "validation")
-   - Apply documented solutions
-   - **CRITICAL:** Avoid repeating previously fixed errors
+1. **US-000:** Project Infrastructure Setup - 13 SP - Status: Not Started (CRITICAL)
+2. **US-001:** User Registration with Email/Password - 5 SP - Status: Not Started
+3. **US-002:** User Login & JWT Token Management - 5 SP - Status: Not Started
+4. **US-003:** KYC Basic - Document Upload - 8 SP - Status: Not Started
+5. **US-004:** Create Stellar Wallet Automatically - 8 SP - Status: Not Started
+6. **US-005:** View Wallet Balance (MXN) - 3 SP - Status: Not Started
 
-3. **Verify against PLANNING.md:**
+### Next Priority Task
 
-   - ✅ Follows folder structure?
-   - ✅ Uses correct naming convention?
-   - ✅ Implements security standards (JWT, input validation)?
-   - ✅ Matches API response format?
-   - ✅ Uses proper error handling pattern?
-   - ✅ Includes audit logging if financial transaction?
+**TASK-001** - Create GitHub repository and clone locally
 
-4. **Security checklist for financial operations:**
-   - [ ] Input validation with Pydantic
-   - [ ] Balance check before debit
-   - [ ] Transaction atomicity (BEGIN/COMMIT)
-   - [ ] Audit log entry created
-   - [ ] Rate limiting applied
-   - [ ] Amount limits enforced (KYC-based)
+- Priority: P0 (CRITICAL - blocks everything)
+- Estimated: XS (15 min)
+- Description: Create repo "wani", add .gitignore (Python, Node, Env), clone to local
+- Files: N/A
+- Dependencies: None
+
+### Sprint Health
+
+- Progress: 0% complete (Day 1 starting)
+- Status: 🟢 On Track (just starting)
+- Blockers: 0 active
 
 ---
 
-### After Each Code Change
+## 🚀 MANDATORY WORKFLOW
+
+### START OF EVERY SESSION
+
+**CRITICAL: Read files in this EXACT order:**
+
+1. **CLAUDE.md** (this file - you're reading it now ✅)
+2. **ARCHITECTURE.md** - Technical setup and conventions
+3. **docs/sprints/sprint-01/tasks.md** - Find next P0 task to work on
+4. **docs/sprints/sprint-01/planning.md** - Current sprint context
+5. **PRODUCT-BACKLOG.md** - Overall product context
+
+**Then announce your work plan:**
+
+```
+📋 Files loaded successfully.
+
+Current Sprint: Sprint 1 - Foundation & Auth
+Next Task: TASK-001 - Create GitHub repository
+Priority: P0
+Estimated Time: 15 min
+Files to modify: Repository setup
+
+Starting work...
+```
+
+### DURING DEVELOPMENT
+
+#### Before Writing ANY Code
+
+1. **Verify you're working on correct task:**
+
+   - Is it the next P0 task from TASKS.md?
+   - Or explicitly requested by user?
+
+2. **Announce what you'll do:**
+
+```
+Modifying: backend/app/services/user_service.py
+Component/Function: UserService.register()
+Purpose: Implement user registration with email verification
+User Story: US-001
+Task: TASK-041
+```
+
+3. **Check constraints:**
+   - Does it follow ARCHITECTURE.md conventions?
+   - Does it respect folder structure?
+   - Does it use correct naming?
+   - Security considerations addressed?
+
+#### While Coding
+
+**ALWAYS:**
+
+- Use try-catch for async operations (backend) / try-except (Python)
+- Validate and sanitize ALL inputs using Pydantic (backend) or Zod (frontend)
+- Check for null/undefined/None before using variables
+- Follow exact conventions from ARCHITECTURE.md
+- Add inline comments for complex logic (especially Stellar blockchain operations)
+- Use environment variables for ALL configuration
+- Implement proper error handling with user-friendly messages
+- Follow API response format (see below)
+- NEVER use localStorage/sessionStorage in React artifacts (not supported)
+
+**NEVER:**
+
+- Skip error handling
+- Use console.log/print in production code
+- Hardcode credentials, API keys, or secrets
+- Delete code without commenting why
+- Ignore TypeScript/Python type errors or linting errors
+- Work outside current task scope
+- Add packages without mentioning it explicitly
+- Use localStorage/sessionStorage in Claude artifacts
+
+#### After Each Change
 
 1. **Test immediately:**
 
-   ```bash
-   # Backend test
-   cd backend
-   pytest tests/test_services/test_wallet_service.py -v
+   - Run the code locally
+   - Verify expected behavior
+   - Check console/terminal for errors
+   - Test edge cases (null, empty, invalid input)
 
-   # Or specific test
-   pytest tests/test_api/test_wallet_routes.py::test_transfer -v
+2. **If error occurs:**
+   - STOP
+   - Copy EXACT error message
+   - Note file and line number
+   - Attempt to fix
+   - If can't fix in 10 minutes → mark task as blocked
 
-   # Frontend test
-   cd frontend-web
-   pnpm test
+### END OF SESSION OR TASK COMPLETION
 
-   # Run backend server and verify
-   uvicorn app.main:app --reload
-   # Test endpoint: http://localhost:8000/api/v1/wallet/balance
-   ```
-
-2. **Verify expected behavior:**
-
-   - Check console for errors (backend and frontend)
-   - Verify database changes if applicable (Supabase dashboard)
-   - Check Redis cache if using cached data
-   - Test edge cases:
-     - Empty values
-     - Negative amounts
-     - Insufficient balance
-     - Invalid UUIDs
-     - Expired tokens
-
-3. **Update documentation:**
-   - Add docstrings for new functions
-   ```python
-   async def transfer_money(from_user: UUID, to_user: UUID, amount: Decimal) -> Transaction:
-       """
-       Transfer money between two users.
-
-       Args:
-           from_user: UUID of sender
-           to_user: UUID of recipient
-           amount: Amount to transfer in USDC
-
-       Returns:
-           Transaction object with status
-
-       Raises:
-           InsufficientBalanceError: If sender balance < amount
-           UserNotFoundError: If either user doesn't exist
-       """
-   ```
-   - Update API docs if endpoint changed (FastAPI auto-generates, but verify)
-   - Note breaking changes in PROGRESS.md
-
----
-
-### Task Completion Protocol
+#### When Task is Complete
 
 1. **Update TASKS.md immediately:**
 
-   ```markdown
-   ### Week 1: Foundation
+```markdown
+- ✅ [2024-12-23 10:30] TASK-001 [US-000] Create GitHub repository - Actual: 12min
+  - Notes: Repo created at github.com/username/wani, .gitignore includes Python, Node, .env
+```
 
-   - [x] [2025-10-15 14:30] [P0] Setup FastAPI project structure
-     - Status: ✅ Completed
-     - Duration: 2 hours
-     - Files: backend/app/main.py, requirements.txt
-     - Notes: Added CORS middleware, Supabase connection tested
-   ```
+2. **Move completed task to "Completed Tasks" section in TASKS.md**
 
-2. **Add to PROGRESS.md:**
+3. **Announce completion:**
 
-   ```markdown
-   ## 2025-10-15 - Day 1, Week 1
+```
+✅ Task TASK-001 completed
 
-   ### ✅ Completed Tasks
+What was done:
+- Created GitHub repository "wani"
+- Added comprehensive .gitignore
+- Cloned to local machine
+- Verified git working correctly
 
-   **[P0] Setup FastAPI project structure**
+Files modified:
+- New repository created
 
-   - Created: backend/app/main.py with FastAPI initialization
-   - Added: CORS middleware for frontend communication
-   - Configured: Supabase connection via environment variables
-   - Tested: Health check endpoint (/health)
-   - Database: Connection pool configured (20 connections)
+Testing: Git commands tested, push/pull working
+Ready for: TASK-002 (Create root folder structure)
+```
 
-   **Files Modified:**
+#### Session Summary
 
-   - backend/app/main.py (new)
-   - backend/app/core/config.py (new)
-   - backend/requirements.txt (new)
-   - backend/.env.example (new)
+At end of work session, provide:
 
-   **Testing:**
+```
+📊 Session Summary
 
-   - Manual: Verified /health endpoint returns 200
-   - Database: Tested Supabase connection
-   - CORS: Verified from frontend can make requests
+Duration: 2.5 hours
+Tasks Completed: 3
+- TASK-001: Create GitHub repository
+- TASK-002: Create root folder structure
+- TASK-003: Add documentation files to root
 
-   ### ⚠️ Issues Encountered
+Tasks In Progress: 1
+- TASK-004: Initialize FastAPI project - 60% complete - Next: Add dependencies
 
-   - None
+Blockers Encountered: 0
 
-   ### 📝 Notes
+Next Session Priority:
+1. Complete TASK-004 (FastAPI setup)
+2. TASK-005 (Python dependencies)
+3. TASK-006 (FastAPI entry point)
 
-   - Using python-dotenv for environment variables
-   - Supabase connection uses asyncpg driver
-   - Remember to update .env with actual credentials
-
-   ### ⏭️ Next Priority
-
-   - Setup database schema (users, wallets tables)
-   ```
-
-3. **Document any errors in ERRORS.md:**
-
-   ```markdown
-   ## Active Errors
-
-   - [ ] [2025-10-15 15:45] SQLAlchemy connection pool exhausted
-     - **File:** backend/app/core/database.py:15
-     - **Error:** `sqlalchemy.exc.TimeoutError: QueuePool limit exceeded`
-     - **Context:** Running load test with 50 concurrent requests
-     - **Root Cause:** Default pool_size=5 is too small
-     - **Solution:** Increased pool_size to 20 in engine creation
-     - **Attempted Solutions:**
-       1. ❌ Tried pool_size=10 - still failed at 40 requests
-       2. ✅ Set pool_size=20, max_overflow=0 - works for 50 requests
-     - **Status:** Resolved
-     - **Prevention:** Document pool size requirements in PLANNING.md
-   ```
+Sprint Progress: 0% → 4% (increased 4%)
+```
 
 ---
 
-## 🔢 TASK PRIORITY SYSTEM
+## 💻 TECHNICAL STANDARDS
 
-### P0 - CRITICAL (Do immediately, block all P1/P2)
+### Technology Stack
 
-**Examples in this project:**
+**CRITICAL: Use ONLY these technologies**
 
-- Authentication system completely broken
-- Database connection failing
-- Hot wallet private key exposed/compromised
-- Payment processing failing (NFC/transfers)
-- Cash-out to bank failing
-- Stellar integration broken
-- User cannot login/register
-- Data loss occurring
-- Security vulnerability discovered
+#### Frontend Web
 
-**Response:** Drop everything, fix immediately, document thoroughly
+- **Framework:** React 18.2+
+- **Language:** TypeScript 5.0+
+- **UI Library:** Tailwind CSS 3.3+
+- **State Management:** Zustand 4.4+
+- **HTTP Client:** TanStack Query (React Query) 5.0+
+- **Router:** React Router 6.20+
+- **Form Handling:** React Hook Form 7.48+
+- **Validation:** Zod
+- **Build Tool:** Vite 5.0+
 
----
+#### Frontend Mobile
 
-### P1 - IMPORTANT (Do after all P0 cleared)
+- **Framework:** React Native 0.73+
+- **Runtime:** Expo SDK 50+
+- **Language:** TypeScript 5.0+
+- **Styling:** NativeWind (Tailwind for RN)
+- **State Management:** Zustand 4.4+
+- **HTTP Client:** TanStack Query 5.0+
+- **Navigation:** React Navigation 6+
+- **NFC:** expo-nfc
+- **Camera/QR:** expo-camera + expo-barcode-scanner
+- **Secure Storage:** expo-secure-store
 
-**Examples in this project:**
+#### Backend API
 
-- Core features implementation (send money, NFC payment, cash-out)
-- KYC verification flow
-- Transaction history not loading
-- Balance display incorrect
-- Push notifications not working
-- Merchant dashboard incomplete
-- Performance issues (API >500ms)
-- Integration with Circle/Bitso not working
-- Major UI bugs affecting user experience
-- Missing input validation on critical endpoints
+- **Language:** Python 3.11+
+- **Framework:** FastAPI 0.108+
+- **Database:** PostgreSQL 15+ (via Supabase)
+- **ORM:** SQLAlchemy 2.0+
+- **Migrations:** Alembic
+- **Cache:** Redis 7+ (Upstash)
+- **Queue:** Celery 5.3+
+- **Authentication:** Supabase Auth + Custom JWT
+- **Validation:** Pydantic 2.5+
+- **Blockchain:** Stellar SDK (py-stellar-base 9.0+)
+- **Password Hashing:** passlib with bcrypt
+- **JWT:** python-jose
 
-**Response:** Complete by end of current week
+#### External Services
 
----
+- **Database:** Supabase (PostgreSQL)
+- **Cache:** Upstash (Redis)
+- **Blockchain:** Stellar Network (testnet for development, mainnet for production)
+- **Email:** Resend
+- **File Storage:** Cloudinary (MVP) or AWS S3
+- **Cash-in:** Circular API
+- **Cash-out:** Bitso API
+- **Deployment:** Railway (backend), Vercel (web), EAS (mobile)
 
-### P2 - NICE TO HAVE (Only when no P0/P1 exist)
+### File Structure
 
-**Examples in this project:**
+**CRITICAL: Follow this structure exactly**
 
-- UI enhancements (animations, styling tweaks)
-- Refactoring for code quality
-- Additional tests (beyond critical paths)
-- Documentation improvements
-- Minor optimizations
-- Dark mode implementation
-- Advanced analytics
-- Non-critical feature additions
-- Tech debt cleanup
-- Performance micro-optimizations
+```
+wani/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── v1/
+│   │   │   │   └── routes/
+│   │   │   │       ├── auth.py
+│   │   │   │       ├── users.py
+│   │   │   │       ├── wallets.py
+│   │   │   │       └── transactions.py
+│   │   │   └── deps.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── security.py
+│   │   │   └── database.py
+│   │   ├── models/
+│   │   │   ├── user.py
+│   │   │   ├── wallet.py
+│   │   │   └── transaction.py
+│   │   ├── schemas/
+│   │   │   ├── user.py
+│   │   │   ├── wallet.py
+│   │   │   └── transaction.py
+│   │   ├── services/
+│   │   │   ├── user_service.py
+│   │   │   ├── wallet_service.py
+│   │   │   ├── stellar_service.py
+│   │   │   └── email_service.py
+│   │   ├── workers/
+│   │   │   ├── celery_app.py
+│   │   │   └── notification_tasks.py
+│   │   ├── middleware/
+│   │   │   ├── auth.py
+│   │   │   └── rate_limit.py
+│   │   ├── utils/
+│   │   └── main.py
+│   ├── alembic/
+│   ├── tests/
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── apps/
+│   ├── web/
+│   │   ├── src/
+│   │   │   ├── app/
+│   │   │   │   ├── features/
+│   │   │   │   │   ├── auth/
+│   │   │   │   │   │   ├── components/
+│   │   │   │   │   │   ├── hooks/
+│   │   │   │   │   │   ├── services/
+│   │   │   │   │   │   └── types/
+│   │   │   │   │   ├── wallet/
+│   │   │   │   │   └── payments/
+│   │   │   │   ├── shared/
+│   │   │   │   │   ├── components/
+│   │   │   │   │   ├── hooks/
+│   │   │   │   │   └── utils/
+│   │   │   │   ├── core/
+│   │   │   │   │   ├── api/
+│   │   │   │   │   ├── store/
+│   │   │   │   │   └── config/
+│   │   │   │   └── routes/
+│   │   │   └── main.tsx
+│   │   └── package.json
+│   │
+│   └── mobile/
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── features/ (same as web)
+│       │   │   ├── shared/
+│       │   │   ├── core/
+│       │   │   ├── navigation/
+│       │   │   └── screens/
+│       │   └── App.tsx
+│       └── package.json
+│
+├── docs/
+│   ├── PRD.md
+│   ├── ARCHITECTURE.md
+│   ├── PRODUCT-BACKLOG.md
+│   └── sprints/
+│       └── sprint-01/
+│           ├── planning.md
+│           ├── tasks.md
+│           └── review.md
+│
+├── CLAUDE.md
+└── README.md
+```
 
-**Response:** Fill time between sprints, deprioritize if needed
+### Naming Conventions
+
+**CRITICAL: Follow these naming rules**
+
+#### Frontend (TypeScript/React)
+
+```typescript
+// Files
+UserProfile.tsx; // Components (PascalCase)
+useAuth.ts; // Hooks (camelCase with 'use' prefix)
+walletService.ts; // Services (camelCase)
+user.types.ts; // Types (camelCase)
+constants.ts; // Constants
+formatCurrency.ts; // Utilities (camelCase)
+
+// Code
+interface User {} // Interfaces (PascalCase)
+type UserRole = string; // Types (PascalCase)
+const API_URL = "..."; // Constants (UPPER_SNAKE_CASE)
+function fetchUser() {} // Functions (camelCase)
+const userName = ""; // Variables (camelCase)
+
+// Components
+export const UserProfile = () => {}; // Named export (preferred)
+export default UserProfile; // Default export (use sparingly)
+
+// React Native specific
+HomeScreen.tsx; // Screens (PascalCase + Screen suffix)
+useNFC.ts; // Native hooks
+```
+
+#### Backend (Python/FastAPI)
+
+```python
+# Files
+user_service.py         # Services (snake_case)
+wallet.py              # Models (snake_case)
+auth_schemas.py        # Schemas (snake_case)
+stellar_client.py      # Clients (snake_case)
+
+# Code
+class UserService:                    # Classes (PascalCase)
+class TransactionModel(Base):        # Models (PascalCase + Model suffix)
+
+def create_user():                   # Functions (snake_case)
+def get_wallet_balance():           # Functions (snake_case)
+
+user_id = "..."                     # Variables (snake_case)
+API_VERSION = "v1"                  # Constants (UPPER_SNAKE_CASE)
+
+# Pydantic schemas
+class UserCreate(BaseModel):        # Schema classes (PascalCase)
+class WalletResponse(BaseModel):
+```
+
+### Code Style
+
+#### Frontend (TypeScript/React)
+
+```typescript
+// ✅ Functional components with TypeScript
+interface UserProfileProps {
+  userId: string;
+  onUpdate?: (user: User) => void;
+}
+
+export const UserProfile: React.FC<UserProfileProps> = ({
+  userId,
+  onUpdate,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUser(userId);
+  }, [userId]);
+
+  const fetchUser = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const data = await userService.getById(id);
+      setUser(data);
+      onUpdate?.(data);
+    } catch (error) {
+      toast.error("Failed to load user");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) return <LoadingSpinner />;
+  if (!user) return <ErrorState />;
+
+  return (
+    <div className="p-4 bg-white rounded-lg shadow">
+      <h2 className="text-xl font-bold">{user.name}</h2>
+      <p className="text-gray-600">{user.email}</p>
+    </div>
+  );
+};
+
+// ✅ Custom hooks
+export const useWallet = (userId: string) => {
+  return useQuery({
+    queryKey: ["wallet", userId],
+    queryFn: () => walletService.getBalance(userId),
+    staleTime: 30000, // 30 seconds
+  });
+};
+
+// ✅ Service pattern
+class WalletService {
+  async getBalance(userId: string): Promise<WalletBalance> {
+    const response = await apiClient.get(`/wallets/${userId}`);
+    return response.data;
+  }
+}
+```
+
+#### Backend (Python/FastAPI)
+
+```python
+# ✅ Pydantic schemas for validation
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=100)
+    full_name: str = Field(..., min_length=2, max_length=100)
+
+class UserResponse(BaseModel):
+    id: str
+    email: EmailStr
+    full_name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# ✅ Route handlers with dependency injection
+@router.post("/users", response_model=UserResponse, status_code=201)
+async def create_user(
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """Create a new user (admin only)."""
+    try:
+        user = await user_service.create(db, user_data)
+        return user
+    except EmailAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=409,
+            detail={"message": str(e), "code": "EMAIL_EXISTS"}
+        )
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# ✅ Service layer with business logic
+class UserService:
+    async def create(self, db: Session, user_data: UserCreate) -> User:
+        # Check if email exists
+        existing = db.query(User).filter(User.email == user_data.email).first()
+        if existing:
+            raise EmailAlreadyExistsError("Email already registered")
+
+        # Hash password
+        hashed_password = get_password_hash(user_data.password)
+
+        # Create user
+        user = User(
+            email=user_data.email,
+            password=hashed_password,
+            full_name=user_data.full_name
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        return user
+```
+
+### API Response Format
+
+**CRITICAL: ALL API responses must follow this format**
+
+```json
+// Success Response
+{
+  "success": true,
+  "data": {
+    "id": "user_123",
+    "email": "carlos@example.com",
+    "full_name": "Carlos Rodriguez"
+  },
+  "message": "User created successfully"
+}
+
+// Success with Pagination
+{
+  "success": true,
+  "data": [
+    { "id": "tx_1", "amount": 500 },
+    { "id": "tx_2", "amount": 250 }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 156,
+      "total_pages": 8
+    }
+  }
+}
+
+// Error Response
+{
+  "success": false,
+  "error": {
+    "message": "Validation failed",
+    "code": "VALIDATION_ERROR",
+    "status_code": 400,
+    "details": [
+      {
+        "field": "email",
+        "message": "Invalid email format"
+      }
+    ]
+  }
+}
+```
+
+### Git Commit Convention
+
+**CRITICAL: ALL commits must follow Conventional Commits format**
+
+```
+<type>(<scope>): <subject>
+
+<body> (opcional)
+<footer> (opcional)
+```
+
+**Types:**
+
+- `feat`: Nueva funcionalidad
+- `fix`: Corrección de bug
+- `docs`: Cambios en documentación
+- `style`: Formato (sin cambio de código)
+- `refactor`: Refactorización
+- `perf`: Mejoras de performance
+- `test`: Agregar o corregir tests
+- `chore`: Cambios en build, configs
+- `security`: Fixes de seguridad
+
+**Examples:**
+
+```
+feat(auth): add JWT refresh token support
+fix(stellar): resolve transaction timeout on testnet
+docs(readme): update installation instructions
+refactor(wallet): simplify balance calculation logic
+security(auth): add rate limiting to login endpoint
+```
 
 ---
 
 ## 🚫 FORBIDDEN ACTIONS
 
-### NEVER do these:
+**NEVER do these under ANY circumstance:**
 
-1. **Start coding without reading all .md files**
-
-   - You'll miss context, repeat errors, work on wrong tasks
-
-2. **Skip task documentation after completion**
-
-   - Makes progress tracking impossible
-   - Team loses context of what was done
-
-3. **Ignore errors or warnings**
-
-   - Small errors become big blockers
-   - Warnings indicate code smell
-
-4. **Delete code without commenting out first**
-
-   - Always comment old code for reference
-   - Delete only after verifying new code works
-
-5. **Work outside current task scope (scope creep)**
-
-   - Finish assigned task completely first
-   - Note ideas for future in TASKS.md as P2
-
-6. **Commit sensitive data**
-
-   ```python
-   # ❌ NEVER
-   STELLAR_HOT_WALLET_SECRET = "SXXX..."
-   DATABASE_URL = "postgresql://user:pass@host/db"
-
-   # ✅ ALWAYS
-   STELLAR_HOT_WALLET_SECRET = os.getenv("STELLAR_HOT_WALLET_SECRET")
-   DATABASE_URL = os.getenv("DATABASE_URL")
-   ```
-
-7. **Use console.log/print in production code**
-
-   ```python
-   # ❌ NEVER in production
-   print(f"User balance: {balance}")
-
-   # ✅ ALWAYS use logger
-   logger.info(f"User balance retrieved", extra={"user_id": user_id, "balance": balance})
-   ```
-
-8. **Skip input validation**
-
-   ```python
-   # ❌ NEVER
-   @router.post("/transfer")
-   async def transfer(from_user: str, to_user: str, amount: float):
-       # No validation, accepts any input
-
-   # ✅ ALWAYS validate with Pydantic
-   class TransferRequest(BaseModel):
-       from_user_id: UUID
-       to_user_id: UUID
-       amount: Decimal = Field(gt=0, le=10000)
-
-   @router.post("/transfer")
-   async def transfer(request: TransferRequest):
-       # Validated automatically
-   ```
-
-9. **Ignore error handling**
-
-   ```python
-   # ❌ NEVER
-   async def transfer_money(from_user, to_user, amount):
-       wallet = get_wallet(from_user)  # Could fail
-       wallet.balance -= amount        # Could fail
-       save_wallet(wallet)             # Could fail
-
-   # ✅ ALWAYS handle errors
-   async def transfer_money(from_user, to_user, amount):
-       try:
-           wallet = await get_wallet(from_user)
-           if wallet.balance < amount:
-               raise InsufficientBalanceError()
-
-           wallet.balance -= amount
-           await save_wallet(wallet)
-
-       except InsufficientBalanceError:
-           logger.warning("Transfer failed: insufficient balance")
-           raise HTTPException(status_code=400, detail="Insufficient balance")
-       except Exception as e:
-           logger.error(f"Transfer failed: {str(e)}")
-           raise HTTPException(status_code=500, detail="Transfer failed")
-   ```
-
-10. **Make database changes without migration**
-
-    ```bash
-    # ❌ NEVER modify database directly
-
-    # ✅ ALWAYS create migration
-    cd backend
-    alembic revision --autogenerate -m "add_transactions_table"
-    alembic upgrade head
-    ```
+1. ❌ Start coding without reading TASKS.md first
+2. ❌ Work on P1/P2 tasks when P0 tasks exist
+3. ❌ Skip updating TASKS.md after completion
+4. ❌ Ignore errors or warnings
+5. ❌ Delete code without backup/comment explaining why
+6. ❌ Work outside current sprint scope (unless explicitly asked)
+7. ❌ Commit sensitive data (.env files, API keys, passwords, Stellar secret keys)
+8. ❌ Use console.log (frontend) or print (backend) in production code
+9. ❌ Skip input validation (use Zod frontend, Pydantic backend)
+10. ❌ Ignore error handling (always try-catch/try-except)
+11. ❌ Add npm/pip packages without announcing explicitly
+12. ❌ Change database schemas without Alembic migration
+13. ❌ Modify ARCHITECTURE.md conventions without permission
+14. ❌ Work on multiple tasks simultaneously
+15. ❌ Make assumptions - ASK if unclear
+16. ❌ Use localStorage/sessionStorage in React artifacts (not supported in Claude.ai)
+17. ❌ Store Stellar secret keys unencrypted
+18. ❌ Skip rate limiting on authentication endpoints
+19. ❌ Hardcode Stellar network URLs (use environment variables)
+20. ❌ Test with real money on mainnet during development
 
 ---
 
-### ALWAYS do these:
+## ✅ REQUIRED ACTIONS
 
-1. **Use try-catch for all async operations**
+**ALWAYS do these:**
 
-   - Especially: Database queries, external API calls, file operations
-
-2. **Validate and sanitize ALL inputs**
-
-   - Use Pydantic models for request validation
-   - Check types, ranges, formats
-
-3. **Check for null/undefined/None**
-
-   ```python
-   # Check before accessing
-   if user is not None and user.wallet is not None:
-       balance = user.wallet.balance
-   ```
-
-4. **Use proper TypeScript types / Python type hints**
-
-   ```typescript
-   // TypeScript
-   function getBalance(userId: string): Promise<number> { ... }
-   ```
-
-   ```python
-   # Python
-   async def get_balance(user_id: UUID) -> Decimal:
-       ...
-   ```
-
-5. **Follow REST conventions**
-
-   - GET for reads, POST for creates, PUT/PATCH for updates, DELETE for deletes
-   - Use plural nouns for resources: `/users`, `/transactions`
-   - Use nested routes: `/users/:id/transactions`
-
-6. **Implement proper error messages**
-
-   ```python
-   # ❌ Generic
-   raise HTTPException(status_code=400, detail="Error")
-
-   # ✅ Specific and helpful
-   raise HTTPException(
-       status_code=400,
-       detail={
-           "code": "INSUFFICIENT_BALANCE",
-           "message": "Cannot transfer $500. Current balance: $100",
-           "balance": 100.00,
-           "required": 500.00
-       }
-   )
-   ```
-
-7. **Use environment variables for ALL config**
-
-   - API keys, secrets, URLs, ports, database credentials
-
-8. **Write descriptive commit messages**
-
-   ```bash
-   # ❌ Bad
-   git commit -m "fix"
-
-   # ✅ Good
-   git commit -m "fix(wallet): resolve race condition in transfer operation
-
-   - Added transaction locking to prevent concurrent transfers
-   - Implemented retry logic with exponential backoff
-   - Added test case for concurrent transfer scenario"
-   ```
-
-9. **Test edge cases**
-
-   - Zero amounts, negative amounts
-   - Non-existent users
-   - Expired tokens
-   - Duplicate requests
-   - Network failures
-
-10. **Update relevant documentation**
-    - Update API docs if endpoint changed
-    - Update README if setup changed
-    - Update PLANNING.md if architecture changed
+1. ✅ Read all context files at session start (CLAUDE.md, ARCHITECTURE.md, TASKS.md)
+2. ✅ Work on highest priority (P0) task first
+3. ✅ Announce what you're about to do before starting
+4. ✅ Follow ARCHITECTURE.md conventions exactly
+5. ✅ Use try-except for ALL async operations in Python
+6. ✅ Use try-catch for ALL async operations in TypeScript
+7. ✅ Validate ALL user inputs (Pydantic backend, Zod frontend)
+8. ✅ Check for None/null/undefined before using variables
+9. ✅ Use proper TypeScript types (no `any` unless absolutely necessary)
+10. ✅ Implement comprehensive error handling with user-friendly messages
+11. ✅ Test code immediately after writing (run locally)
+12. ✅ Update TASKS.md after each completion with actual time spent
+13. ✅ Use environment variables for ALL configuration
+14. ✅ Write descriptive commit messages following Conventional Commits
+15. ✅ Add comments for complex logic (especially Stellar transactions)
+16. ✅ Ask for clarification if requirements unclear
+17. ✅ Encrypt Stellar secret keys before storing in database (use Fernet)
+18. ✅ Use Stellar testnet for development (mainnet only for production)
+19. ✅ Implement rate limiting on authentication endpoints (slowapi)
+20. ✅ Hash passwords with bcrypt (10 rounds minimum)
 
 ---
 
-## 📄 SESSION MANAGEMENT
+## 📋 TASK PRIORITY SYSTEM
 
-### Starting a Session
+### P0 - CRITICAL (Do IMMEDIATELY)
+
+**Drop everything else and fix these:**
+
+- System down / broken
+- Security vulnerabilities (exposed secrets, SQL injection, XSS)
+- Data loss risks
+- Authentication/Authorization failures
+- Stellar wallet security issues
+- Production-breaking bugs
+- Blockers preventing other work
+- Setup tasks (US-000) - blocks all development
+
+**When you see P0:**
+
+```
+🚨 P0 DETECTED
+Dropping current work.
+Switching to: TASK-001
+Reason: Infrastructure setup blocks all development
+```
+
+### P1 - IMPORTANT (Do after all P0)
+
+**Core sprint work:**
+
+- User Stories from Sprint Backlog (US-001 to US-005)
+- Core features for Sprint Goal
+- Important integrations (Stellar, Supabase, Resend)
+- Significant user-facing functionality
+- Backend API endpoints
+- Frontend components connecting to APIs
+- Mobile screens implementation
+
+### P2 - NICE TO HAVE (Only if no P0/P1)
+
+**Enhancement work:**
+
+- UI polish and animations
+- Refactoring for code quality
+- Documentation improvements (README, inline comments)
+- Minor optimizations
+- Technical debt cleanup
+- Code formatting and linting fixes
+
+**Priority Rule:**
+
+> P0 tasks ALWAYS come first, even if you're in the middle of P1.
+> P1 tasks come before P2, no exceptions.
+> If user explicitly requests different priority, confirm with them first.
+
+---
+
+## 🛠️ ERROR HANDLING PROTOCOL
+
+### When Error Occurs
+
+1. **Immediate actions:**
+
+```
+⚠️ ERROR ENCOUNTERED
+
+File: backend/app/services/stellar_service.py:45
+Error: stellar_sdk.exceptions.ConnectionError: Unable to connect to Horizon
+Context: Attempting to create test wallet for US-004
+Task: TASK-030
+```
+
+2. **Attempt to fix (10 minutes max):**
+
+   - Read error message carefully
+   - Check if Stellar testnet is down (check status page)
+   - Review similar code that works
+   - Try logical fixes (check network URL, API key, etc.)
+
+3. **If can't fix in 10 minutes:**
+
+```
+🚧 TASK BLOCKED
+
+Task: TASK-030 is now blocked
+Blocker: Stellar Horizon testnet unreachable
+
+Attempted fixes:
+1. Verified STELLAR_HORIZON_URL in .env
+2. Tested with curl - connection timeout
+3. Checked Stellar status page - testnet operational
+
+Moving to next P1 task: TASK-036 (Create users table migration)
+
+Action needed: Wait for Stellar testnet to stabilize or use mock for testing
+```
+
+4. **Update TASKS.md:**
 
 ```markdown
-## Session Start: 2025-10-15 09:00 AM
-
-**Previous Session Summary:**
-
-- Week 1, Day 1
-- Completed: FastAPI setup, database schema
-- In Progress: Authentication endpoints
-- Blockers: None
-
-**Current Task:**
-
-- Task #3: Implement user registration endpoint
-- Priority: P0
-- Estimated: 2 hours
-
-**Blockers Checked:**
-
-- None in ERRORS.md
-
-**Environment Status:**
-
-- ✅ Backend running (port 8000)
-- ✅ Frontend running (port 5173)
-- ✅ Database connected
-- ✅ Redis running
-
-**Plan for This Session:**
-
-1. Implement POST /api/v1/auth/register endpoint
-2. Add Pydantic validation schema
-3. Hash password with bcrypt
-4. Create user in database
-5. Write unit tests
-6. Test manually with curl/Postman
+- ⏸️ TASK-030 [US-000] Test Stellar connection - Blocked by: Stellar Horizon testnet unreachable
+  - Attempted: Verified config, tested with curl, checked status
+  - Needs: Stellar testnet to be stable OR implement mock for testing
+  - Date Blocked: 2024-12-23
 ```
+
+5. **Continue with next available task**
+
+### Common Error Patterns
+
+**Stellar SDK Errors:**
+
+- `ConnectionError`: Horizon API down → Check status, use testnet backup URL
+- `BadRequestError`: Invalid transaction → Verify account funded, check sequence number
+- `NotFoundError`: Account doesn't exist → Fund account first on testnet
+
+**Supabase Errors:**
+
+- `AuthApiError`: Auth issues → Check SUPABASE_KEY is service key, not anon key
+- `PostgrestError`: Database query failed → Check table exists, verify column names
+
+**FastAPI Errors:**
+
+- `ValidationError`: Pydantic validation failed → Check request body matches schema
+- `422 Unprocessable Entity`: Input validation → Check required fields, data types
+
+**React/React Native Errors:**
+
+- `Cannot read property of undefined`: Null check missing → Add optional chaining `user?.name`
+- `Network request failed`: API unreachable → Check VITE_API_URL or EXPO_PUBLIC_API_URL
 
 ---
 
-### During the Session
+## 🎯 PROJECT-SPECIFIC RULES
 
-**Every 30 minutes:**
+### Critical Business Logic
 
-- Save all files (Ctrl+S / Cmd+S)
-- Commit code with meaningful message
-- Quick mental check: "Am I on the right task?"
+**Wani Financial Rules:**
 
-**After each sub-task:**
+1. **Money Handling:**
 
-- Run tests
-- Verify in browser/Postman
-- Document any issues immediately in ERRORS.md
+   - ALL amounts stored as Decimal in backend (never float)
+   - MXN amounts: 2 decimal places max
+   - USDC amounts: 6 decimal places max
+   - Always validate amounts > 0 before transactions
 
-**Taking notes:**
+2. **Authentication:**
 
-```markdown
-## Session Notes - 2025-10-15
+   - Passwords MUST be hashed with bcrypt (10 rounds minimum)
+   - Access tokens expire in 15 minutes
+   - Refresh tokens expire in 7 days
+   - Rate limit: Max 5 login attempts per 15 minutes per IP
 
-**09:15** - Started registration endpoint implementation
-**09:30** - Added Pydantic schema for validation
-**09:45** - Issue: Email validation regex not working - Solution: Used pydantic.EmailStr instead
-**10:00** - Password hashing implemented with passlib
-**10:15** - Database insert working
-**10:30** - Writing tests
-```
+3. **Stellar Wallet Security:**
 
----
+   - Secret keys MUST be encrypted with Fernet before storing
+   - NEVER log or display secret keys
+   - Use testnet for development (STELLAR_NETWORK=testnet)
+   - Verify transactions succeed before updating database
 
-### Ending a Session
+4. **KYC Levels:**
 
-1. **Create comprehensive session summary in PROGRESS.md:**
+   - None: Max $1,000 MXN/transaction, $5,000 MXN/month
+   - Basic: Max $10,000 MXN/transaction, $50,000 MXN/month
+   - Full: Max $100,000 MXN/transaction, no monthly limit
 
-```markdown
-## Session Summary - 2025-10-15 (09:00 AM - 12:00 PM)
+5. **Transaction Idempotency:**
+   - ALL financial transactions must have idempotency_key
+   - Check for existing transaction with same key before processing
+   - Prevent duplicate charges
 
-Duration: 3 hours
-Week: 1, Day 1
+### External Dependencies
 
-### ✅ Completed Tasks
+**CRITICAL: These services are essential**
 
-**[P0] User Registration Endpoint**
+1. **Stellar Network:**
 
-- Implemented: POST /api/v1/auth/register
-- Added: Pydantic validation (email, password strength, phone format)
-- Security: Password hashing with bcrypt (12 rounds)
-- Database: User creation with error handling
-- Tests: 5 unit tests written and passing
-- Manual Testing: Verified with Postman, all cases work
+   - Development: `https://horizon-testnet.stellar.org`
+   - Production: `https://horizon.stellar.org`
+   - Uses USDC stablecoin for cross-border transfers
+   - Transaction fees: ~$0.00001 (almost free)
+   - Confirmation time: 3-5 seconds
 
-**Files Created/Modified:**
+2. **Supabase (PostgreSQL + Auth):**
 
-- backend/app/api/routes/auth.py (created)
-- backend/app/schemas/user.py (created)
-- backend/app/models/user.py (modified - added unique constraint)
-- backend/tests/test_api/test_auth_routes.py (created)
-- backend/requirements.txt (added passlib[bcrypt])
+   - Database: `DATABASE_URL` from Supabase
+   - Auth: `SUPABASE_URL` + `SUPABASE_SERVICE_KEY`
+   - Connection pooling: max 20 connections
+   - Backup strategy: Daily automated backups
 
-**Database Changes:**
+3. **Upstash (Redis):**
 
-- Added unique constraint on users.email
-- Added unique constraint on users.phone
+   - Cache: `REDIS_URL` from Upstash
+   - Used for: rate limiting, session data, temporary data
+   - TTL: Set appropriately per use case
 
-### 🚧 In Progress
+4. **Resend (Email):**
 
-**[P0] User Login Endpoint**
+   - API Key: `RESEND_API_KEY`
+   - From: `noreply@wani.app`
+   - Templates: HTML emails for verification, notifications
 
-- Started: JWT token generation logic
-- 40% complete
-- Next: Implement refresh token rotation
-- Estimated remaining: 1 hour
+5. **Circular (Cash-in USA/CAN):**
 
-### ⚠️ Issues Encountered
+   - API: `CIRCULAR_API_KEY` + `CIRCULAR_API_SECRET`
+   - Webhook: `CIRCULAR_WEBHOOK_SECRET`
+   - Purpose: Load funds from USA/Canada bank accounts
 
-**Email validation initially failing:**
+6. **Bitso (Cash-out MX):**
+   - API: `BITSO_API_KEY` + `BITSO_API_SECRET`
+   - Webhook: `BITSO_WEBHOOK_SECRET`
+   - Purpose: Convert to MXN and transfer to Mexican banks
 
-- Problem: Custom regex was too strict
-- Solution: Switched to pydantic.EmailStr
-- Time lost: 15 minutes
-- Documented: ERRORS.md entry #5
+### Sensitive Areas
 
-**Database unique constraint error not handled:**
+**⚠️ CRITICAL CODE - Test thoroughly, ask before major changes**
 
-- Problem: Duplicate email crashed with unhandled exception
-- Solution: Added try-except for IntegrityError
-- Prevention: Now all database operations have error handling
+1. **`backend/app/services/stellar_service.py`**
 
-### 📊 Metrics
+   - Handles ALL blockchain transactions
+   - Manages wallet creation and secret key encryption
+   - Any bug here = money loss
+   - ALWAYS test on testnet first
 
-- Lines of code written: ~200
-- Tests written: 5
-- Tests passing: 5/5 (100%)
-- Bugs fixed: 2
-- New bugs introduced: 0
+2. **`backend/app/core/security.py`**
 
-### 🎯 Next Session Priority
+   - Password hashing and JWT token generation
+   - Encryption/decryption of secret keys
+   - Security vulnerability = catastrophic
 
-**Must complete next session:**
+3. **`backend/app/services/wallet_service.py`**
 
-1. [P0] Finish login endpoint (JWT + refresh token)
-2. [P0] Test authentication flow end-to-end
-3. [P1] Setup frontend auth context
+   - Manages user balances
+   - Updates after transactions
+   - Bugs = incorrect balances
 
-**Can defer if needed:**
+4. **Database Migrations (`backend/alembic/versions/`)**
 
-- [P2] Add 2FA support
+   - Changes to production data
+   - ALWAYS backup before running migration
+   - Test migrations on staging first
 
-### 📝 Important Notes
+5. **Authentication Flows:**
+   - `backend/app/api/v1/routes/auth.py`
+   - `apps/web/src/app/features/auth/`
+   - `apps/mobile/src/app/features/auth/`
+   - Security bugs = account takeover
 
-- Remember: JWT secret must be in .env, never hardcoded
-- Phone validation: Currently US/Mexico format only (+1, +52)
-- Password requirements: Min 8 chars, 1 uppercase, 1 number
-- Registration sends verification email (SendGrid configured)
+### Testing Requirements
 
-### 🔗 References
+**Required for this sprint:**
 
-- JWT implementation: https://fastapi.tiangolo.com/tutorial/security/
-- Passlib docs: https://passlib.readthedocs.io/
-- Pydantic validation: https://docs.pydantic.dev/
+1. **Manual Testing (Mandatory):**
 
----
+   - Test happy path for every feature
+   - Test error cases (invalid input, missing fields)
+   - Test edge cases (empty strings, null, very large numbers)
+   - Test on: Chrome (web), iOS simulator (mobile), Android emulator (mobile)
 
-**Status:** On track for Week 1 goals ✅
-**Blockers:** None
-**Team communication needed:** None
-```
+2. **Stellar Testing:**
 
-2. **Update all tracking files:**
+   - ALWAYS use testnet for development
+   - Fund test accounts with testnet lumens (XLM)
+   - Verify transactions on Stellar Laboratory
+   - Check balances after operations
 
-   - ✅ TASKS.md: Mark completed tasks with [x]
-   - ✅ PROGRESS.md: Add session summary above
-   - ✅ ERRORS.md: Document new errors or mark resolved
-   - ✅ Git commit: All code changes with good message
+3. **API Testing:**
 
-3. **Cleanup and confirmation:**
+   - Test all endpoints with curl or Postman
+   - Verify correct status codes (200, 201, 400, 401, 404, 500)
+   - Check response format matches API standard
+   - Test rate limiting works (try >5 login attempts)
 
-   ```
-   "Session ended successfully at 12:00 PM.
-
-   Summary:
-   ✅ Completed: 1 task (User registration endpoint)
-   🚧 In Progress: 1 task (User login endpoint - 40%)
-   📝 Documented: All changes in PROGRESS.md
-   🐛 Errors: 2 resolved, 0 active blockers
-
-   Next Session:
-   🎯 Priority: Complete login endpoint
-   ⏱️ Estimated: 1-2 hours
-   📅 Week 1, Day 2
-
-   Sprint Progress: 2/15 tasks complete (13%)
-   On track for Week 1 completion ✅"
-   ```
-
----
-
-## 🔧 CONTEXT RECOVERY PROTOCOL
-
-**If context is lost or starting fresh session:**
-
-### Step 1: Read Last 3 Session Summaries
-
-```bash
-# Open PROGRESS.md and read bottom-up
-# Look for:
-- What was completed recently
-- What's currently in progress
-- Any blockers mentioned
-- Important decisions made
-```
-
-### Step 2: Check Git Status
-
-```bash
-cd backend
-git status
-# Look for uncommitted changes
-
-git log --oneline -5
-# See last 5 commits to understand recent work
-```
-
-### Step 3: Review Active Tasks
-
-```bash
-# Open TASKS.md
-# Find current week section
-# Look for tasks marked [ ] or [~] (in progress)
-# Identify highest priority incomplete task
-```
-
-### Step 4: Check for Blockers
-
-```bash
-# Open ERRORS.md
-# Look for entries marked:
-# - [ ] (Active/Unresolved)
-# Read through to understand current issues
-```
-
-### Step 5: Verify Environment
-
-```bash
-# Backend
-cd backend
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip list  # Verify packages installed
-python -c "import app; print('OK')"  # Test imports
-uvicorn app.main:app --reload  # Start server
-
-# Frontend Web
-cd frontend-web
-pnpm install  # Ensure packages installed
-pnpm dev  # Start dev server
-
-# Database
-# Check Supabase dashboard - connection active?
-
-# Redis
-redis-cli ping  # Should return PONG
-```
-
-### Step 6: Continue from Last Checkpoint
-
-```
-"Context recovered successfully.
-
-Last session: 2025-10-15 09:00-12:00 (3 hours ago)
-Last task completed: User registration endpoint
-Current task: User login endpoint (40% complete)
-Next step: Implement refresh token rotation
-
-Environment verified:
-✅ Backend running
-✅ Frontend running
-✅ Database connected
-✅ No active blockers
-
-Resuming work on: app/api/routes/auth.py
-Function: login_endpoint
-Estimated time to completion: 1 hour"
-```
+4. **UI/UX Testing:**
+   - Verify all forms validate correctly
+   - Check error messages are user-friendly
+   - Ensure loading states work
+   - Test on slow network (throttle to 3G)
 
 ---
 
 ## 📊 QUALITY CHECKLIST
 
-**Before marking ANY task as complete, verify ALL items:**
+Before marking ANY task as complete, verify ALL of these:
 
 ### Functionality
 
-- [ ] Code runs without errors
-- [ ] All acceptance criteria met
-- [ ] Edge cases tested (null, empty, invalid inputs)
-- [ ] Works on both success and failure paths
+- [ ] Code runs without errors (no console errors, no exceptions)
+- [ ] All Acceptance Criteria met (check TASKS.md)
+- [ ] Expected behavior verified with manual testing
+- [ ] Edge cases tested (null, undefined, empty, very large/small numbers)
+- [ ] Works on target platforms (web: Chrome, mobile: iOS + Android)
 
 ### Code Quality
 
-- [ ] Follows project naming conventions
-- [ ] Proper TypeScript types / Python type hints used
-- [ ] No hardcoded values (use constants/config)
-- [ ] No commented-out code left behind
-- [ ] No console.log / print statements in production code
-- [ ] Functions are single-purpose and reasonably sized (<50 lines)
-
-### Security
-
-- [ ] Input validation implemented (Pydantic schemas)
-- [ ] Authentication/authorization checked where needed
-- [ ] SQL injection prevented (using ORM only)
-- [ ] XSS prevented (React auto-escapes, API returns JSON)
-- [ ] Sensitive data not logged
-- [ ] Rate limiting applied to public endpoints
-- [ ] CORS configured correctly
+- [ ] Follows ARCHITECTURE.md conventions exactly
+- [ ] Proper naming conventions used (PascalCase, camelCase, snake_case)
+- [ ] No console.log (JS) or print (Python) statements in code
+- [ ] TypeScript types used properly (no `any` except when necessary)
+- [ ] Python type hints used where appropriate
+- [ ] Code is readable and maintainable (clear variable names, logical structure)
 
 ### Error Handling
 
-- [ ] Try-catch blocks around async operations
-- [ ] Specific error types used (not generic Exception)
-- [ ] User-friendly error messages
-- [ ] Errors logged with context
-- [ ] HTTP status codes correct (400 vs 404 vs 500)
+- [ ] Try-catch (JS) or try-except (Python) for ALL async operations
+- [ ] Input validation implemented (Zod frontend, Pydantic backend)
+- [ ] Null/undefined/None checks added where needed
+- [ ] User-friendly error messages (not technical stack traces)
+- [ ] Proper HTTP status codes used in API responses
 
-### Database
+### Security
 
-- [ ] Migrations created if schema changed
-- [ ] Transactions used for multi-step operations
-- [ ] Indexes exist on frequently queried columns
-- [ ] No N+1 query problems
-- [ ] Connection pooling configured
-
-### Testing
-
-- [ ] Unit tests written for business logic
-- [ ] Tests pass locally
-- [ ] Manual testing completed
-- [ ] Tested on both frontend and backend if fullstack feature
-
-### Documentation
-
-- [ ] Docstrings added to new functions
-- [ ] TASKS.md updated with completion
-- [ ] PROGRESS.md updated with details
-- [ ] ERRORS.md updated if errors encountered
-- [ ] API docs updated if endpoints changed (OpenAPI auto-generated)
-- [ ] README updated if setup/deployment changed
+- [ ] No hardcoded credentials (check for API keys, passwords, secrets)
+- [ ] Input sanitization implemented (prevent SQL injection, XSS)
+- [ ] Authentication/Authorization checked on protected routes
+- [ ] Stellar secret keys encrypted before database storage
+- [ ] Rate limiting implemented on sensitive endpoints (auth)
+- [ ] Passwords hashed with bcrypt
+- [ ] JWT tokens have proper expiration
 
 ### Performance
 
-- [ ] No unnecessary API calls
-- [ ] Proper caching where applicable (Redis)
-- [ ] Images optimized if added
-- [ ] Bundle size acceptable (<200KB for critical paths)
-- [ ] No infinite loops or memory leaks
+- [ ] No unnecessary re-renders (React) or query loops
+- [ ] Database queries indexed appropriately
+- [ ] API responses are reasonably fast (<200ms target for P95)
+- [ ] Loading states implemented for async operations
+- [ ] Caching used where appropriate (TanStack Query, Redis)
 
-### User Experience
+### Documentation
 
-- [ ] Responsive design maintained (mobile + desktop)
-- [ ] Loading states shown for async operations
-- [ ] Error messages are user-friendly
-- [ ] Success feedback provided
-- [ ] Accessibility standards met (WCAG 2.1 AA)
-- [ ] Navigation intuitive
+- [ ] Complex logic has inline comments explaining why (not just what)
+- [ ] TASKS.md updated with completion timestamp and notes
+- [ ] API documentation updated if endpoint changed
+- [ ] Breaking changes noted if any
+- [ ] README updated if setup steps changed
 
-### Git
+### Testing
 
-- [ ] All changes committed
-- [ ] Commit messages descriptive
-- [ ] Branch up to date with main
-- [ ] No merge conflicts
+- [ ] Manual testing completed for happy path
+- [ ] Different scenarios tested (success, failure, edge cases)
+- [ ] Error scenarios tested and handled gracefully
+- [ ] No new bugs introduced (regression testing)
+- [ ] Stellar transactions tested on testnet (if applicable)
+
+---
+
+## 📄 SCRUM INTEGRATION
+
+### During Sprint
+
+**Current Sprint Focus:**
+
+- **Primary Goal:** Establish infrastructure complete + users can register, authenticate, and have Stellar wallet
+- **Must complete for goal:** US-000 (Setup), US-001 (Registration), US-002 (Login), US-004 (Wallet)
+- **Sprint ends:** 2025-01-03 (10 days remaining from start)
+
+**Daily Work Pattern:**
+
+1. Start session → Read CLAUDE.md, ARCHITECTURE.md, TASKS.md
+2. Identify next P0 task from TASKS.md
+3. Announce what you'll work on
+4. Work on task following all rules
+5. Test thoroughly before marking complete
+6. Update TASKS.md with completion + actual time
+7. Move to next task
+8. At end of day session, provide Session Summary
+9. Ensure TASKS.md reflects reality
+
+**Mid-Sprint (Day 5 - Dec 27):**
+
+- Progress should be ~50% (39 tasks completed out of 78)
+- If behind schedule, flag to user immediately
+- May need scope adjustment (move US-005 to Sprint 2)
+- Run progress check: Are P0 tasks done? Is infrastructure working?
+
+**Pre-Review (Day 9 - Jan 2):**
+
+- Focus on completing started User Stories (don't start new ones)
+- Don't start US-005 if US-001 to US-004 not done
+- Prepare demos of completed work
+- Test end-to-end flows (register → login → wallet created)
+
+### Sprint Transitions
+
+**End of Sprint:**
+
+- Complete all in-progress tasks or document current status
+- Don't start new tasks after Day 9 (focus on finishing)
+- Ensure all work is properly documented in TASKS.md
+- Archive sprint docs to `docs/sprints/sprint-01/`
+
+**New Sprint (Sprint 2):**
+
+- CLAUDE.md will be updated with Sprint 2 context
+- New Sprint Planning will define priorities
+- New TASKS.md will have new task breakdown
+- Previous sprint (Sprint 1) will be archived
 
 ---
 
 ## 🆘 WHEN STUCK PROTOCOL
 
-### Level 1: First 15 Minutes (Self-Debug)
+### First 10 Minutes (Initial Troubleshooting)
 
-1. **Read error message carefully**
+- Re-read error message word-by-word
+- Check ARCHITECTURE.md for similar patterns
+- Review working code that does something similar
+- Try obvious fixes (restart server, clear cache, check env vars)
+- Search documentation for specific error code
 
-   - Don't skim, read every word
-   - Note: file, line number, error type
+### After 10 Minutes (Still Stuck)
 
-2. **Check ERRORS.md**
+```
+🤔 INVESTIGATING BLOCKER
 
-   ```bash
-   # Search for similar errors
-   # Keywords to search: error type, file name, function name
-   ```
+Task: TASK-030
+Issue: Stellar Horizon testnet returning 504 Gateway Timeout
+Time spent: 10 minutes
 
-3. **Review working examples in codebase**
+Attempted:
+1. Verified STELLAR_HORIZON_URL in .env is correct
+2. Tested with curl - times out after 30 seconds
+3. Checked Stellar status page - shows operational
+4. Tried alternative testnet URL - same issue
 
-   ```bash
-   # Find similar working code
-   # Example: If struggling with authentication,
-   # search for other authenticated endpoints
-   grep -r "authenticate" backend/app/api/routes/
-   ```
+Next: Will wait 5 minutes and retry, if still failing will use mock
+Or: Will mark as blocked and move to TASK-036 (database work)
+```
 
-4. **Check official documentation**
-   - FastAPI: https://fastapi.tiangolo.com/
-   - React Query: https://tanstack.com/query/latest/docs/react/overview
-   - Supabase: https://supabase.com/docs
-   - Stellar SDK: https://stellar-sdk.readthedocs.io/
+### After 20 Minutes (Can't Resolve)
 
----
+```
+🚧 MARKING AS BLOCKED
 
-### Level 2: After 15 Minutes (Still Stuck)
+Task TASK-030 is blocked.
+Reason: Stellar Horizon testnet unreachable, likely temporary outage
+Impact: Can't test wallet creation, blocks US-004
 
-1. **Document the error completely in ERRORS.md:**
+Moving to: TASK-036 (Create users table migration - P0)
+This task doesn't depend on Stellar, can proceed
 
-````markdown
-## Active Errors
+User action needed:
+- Check Stellar testnet status in 1-2 hours
+- Consider using mock for testing if issue persists
+- Could continue with other backend/frontend work
+```
 
-- [ ] [2025-10-15 10:30] Stellar transaction fails with "bad auth" error
-  - **File:** backend/app/core/stellar.py:45
-  - **Function:** send_usdc()
-  - **Error:** `stellar_sdk.exceptions.BadRequestError: transaction failed: tx_bad_auth`
-  - **Context:**
-    - Trying to send 500 USDC from hot wallet to test address
-    - Hot wallet has sufficient balance (checked via Horizon)
-    - Transaction builds successfully, fails on submit
-  - **Code Snippet:**
-
-    ```python
-    transaction = TransactionBuilder(
-        source_account=source_account,
-        network_passphrase=Network.TESTNET_NETWORK_PASSPHRASE,
-        base_fee=100
-    ).append_payment_op(
-        destination=destination_address,
-        asset=self.usdc_asset,
-        amount=str(amount)
-    ).build()
-
-    transaction.sign(self.hot_wallet_keypair)  # Line 45 - FAILS HERE
-    response = self.server.submit_transaction(transaction)
-    ```
-
-  - **Environment:**
-    - Stellar Network: Testnet
-    - SDK version: stellar-sdk 9.1.0
-    - Hot wallet loaded from env var
-  - **Attempted Solutions:**
-    1. ❌ Verified hot wallet secret is correct (it is)
-    2. ❌ Checked account exists on testnet (it does)
-    3. ❌ Tried with different test account (same error)
-  - **Next Steps to Try:**
-    - Check if account has trustline for USDC
-    - Verify network passphrase matches (testnet vs public)
-    - Try with native XLM transfer first
-  - **Status:** Active - blocking P0 task "Stellar integration"
-  - **Impact:** Cannot test remittance flow
-  - **Workaround:** None available
-````
-
-2. **Mark task as blocked in TASKS.md:**
+**Update TASKS.md:**
 
 ```markdown
-- [~] [2025-10-15 10:00] [P0] Implement Stellar USDC transfer
-  - Status: 🚫 BLOCKED
-  - Blocker: Stellar auth error (see ERRORS.md #12)
-  - Time spent: 1.5 hours
-  - Next: Try trustline verification
-```
-
-3. **Move to next P1 task:**
-
-```
-"Task blocked after 15 minutes of debugging.
-
-Blocked task: Stellar USDC transfer
-Blocker documented: ERRORS.md entry #12
-
-Moving to next available task:
-Next task: [P1] Implement transaction history endpoint
-Estimated time: 2 hours
-
-Will return to blocked task after:
-- Consultation with team
-- Fresh perspective tomorrow
-- More research completed"
+- ⏸️ TASK-030 [US-000] Test Stellar connection - P0 - S (30min)
+  - Blocked by: Stellar Horizon testnet unreachable (504 errors)
+  - Attempted: Verified config, tested with curl, tried alternative URLs
+  - Needs: Stellar testnet to stabilize OR implement mock for testing
+  - Action: Retry in 1-2 hours or proceed with mock
+  - Date Blocked: 2024-12-23 14:30
 ```
 
 ---
 
-### Level 3: Persistent Blocker (After 1 Hour Total)
+## 🎓 LEARNING MODE
 
-1. **Add to ERRORS.md as HIGH PRIORITY BLOCKER:**
+### When Working with New Tech
 
-```markdown
-## 🚨 HIGH PRIORITY BLOCKERS
+If you encounter a library/pattern unfamiliar to you:
 
-- [ ] [2025-10-15 11:30] **[BLOCKER]** Stellar transaction authentication failure
-  - **Priority:** P0 - Blocking core remittance feature
-  - **Time Lost:** 1 hour
-  - **Status:** Needs team consultation
-  - [All details from Level 2 above]
-  - **Escalation:** Scheduled for team review / Stack Overflow question posted
-```
-
-2. **Update sprint status:**
-
-```markdown
-## Week 1 Status
-
-**At Risk:**
-
-- Stellar integration blocked (1 hour lost)
-- May need to adjust Week 1 goals if not resolved by end of day
-
-**Mitigation:**
-
-- Continuing with other P1 tasks
-- Researching alternative approaches
-- Team consultation scheduled
-```
-
-3. **Consider alternatives:**
-
-   - Can we use mock Stellar responses for now?
-   - Can we defer this feature and work on others?
-   - Is there a simpler test case to start with?
-   - Do we need external help (Discord, Stack Overflow)?
-
-4. **Document decision and move forward:**
+1. **Acknowledge:**
 
 ```
-"After 1 hour on blocker, implementing mitigation:
+📚 NEW TERRITORY
 
-Decision: Create mock Stellar service for testing
-- Allows frontend development to continue
-- Allows testing of other features
-- Real Stellar integration becomes separate task
+Working with: expo-nfc for NFC payments
+Confidence level: Medium (familiar with React Native, new to NFC)
 
-New tasks created:
-- [P1] Create MockStellarService for testing
-- [P0] Debug Stellar auth issue (separate session)
-
-Current session focus:
-- Proceeding with transaction history endpoint
-- Using mocked blockchain responses
-
-Blocker will be addressed:
-- Next session (fresh perspective)
-- After team consultation
-- With additional research"
+Will: Read expo-nfc documentation, check existing React Native examples, start with simple implementation
 ```
 
----
+2. **Research approach:**
 
-## 🎯 PROJECT-SPECIFIC FOCUS AREAS
+   - Check official documentation (expo.dev for Expo packages)
+   - Look for patterns in existing codebase (if any)
+   - Start with simplest possible implementation
+   - Test frequently with small iterations
+   - Ask for clarification if unclear
 
-### 1. Core Feature Priority (IN ORDER)
+3. **Document learnings:**
 
-**Week 1-2: Foundation**
-
-- ✅ Authentication (register, login, JWT)
-- ✅ Database schema (users, wallets, transactions)
-- ✅ Stellar integration (testnet)
-- ✅ Basic wallet operations (balance, history)
-
-**Week 3-4: Remittance Flow**
-
-- ✅ Send money endpoint (USA → Mexico)
-- ✅ Receive money endpoint
-- ✅ Circle integration (USD → USDC)
-- ✅ Internal balance tracking
-- ✅ P2P transfers
-
-**Week 5-6: Payments**
-
-- ✅ NFC payment flow (merchant + customer)
-- ✅ QR code payments (fallback)
-- ✅ Merchant dashboard
-- ✅ Payment processing
-
-**Week 7: Cash-out**
-
-- ✅ Bitso integration
-- ✅ SPEI withdrawal
-- ✅ Bank account management
-- ✅ Status monitoring
-
-**Week 8: Polish & Launch**
-
-- ✅ Security hardening
-- ✅ Monitoring setup
-- ✅ Load testing
-- ✅ Beta launch
-
-### 2. Technical Excellence Standards
-
-**Code Maintainability:**
-
-- Functions < 50 lines
-- Clear variable names (no `x`, `tmp`, `data`)
-- Docstrings on all public functions
-- Type hints everywhere (Python) / Types everywhere (TypeScript)
-- DRY principle (Don't Repeat Yourself)
-
-**Scalability Considerations:**
-
-- Database queries optimized (use EXPLAIN ANALYZE)
-- Caching where appropriate (Redis, React Query)
-- Pagination on all list endpoints (default limit: 20)
-- Connection pooling configured
-- Rate limiting on all public endpoints
-
-**Security First Approach:**
-
-- Input validation on ALL endpoints (Pydantic)
-- Authentication required on all non-public endpoints
-- Authorization checks (user can only access their data)
-- Audit logging on all financial transactions
-- Secrets in environment variables only
-- HTTPS only in production
-
-**Performance Optimization:**
-
-- API p95 latency < 200ms (measure with load tests)
-- Frontend FCP < 1.5s (measure with Lighthouse)
-- Database queries < 100ms (use indexes)
-- Redis caching for expensive queries (30s TTL)
-- Image optimization (lazy loading, proper formats)
-
-### 3. User Experience Principles
-
-**Intuitive Interface:**
-
-- Maximum 3 taps to complete any primary action
-- Clear error messages ("Insufficient balance" not "Error 400")
-- Success feedback on every action (toast, animation)
-- Consistent UI patterns (buttons, inputs, cards)
-- Loading states on all async operations
-
-**Fast Performance:**
-
-- No loading spinners >2 seconds
-- Optimistic UI updates where safe
-- Background sync for non-critical operations
-- Debounced search inputs
-- Virtualized long lists
-
-**Mobile Responsive:**
-
-- Mobile-first design (90% of users)
-- Touch targets ≥44px (accessibility)
-- Readable text without zooming (16px minimum)
-- Works offline for viewing balance/history (PWA)
-- Native feel on mobile (smooth animations)
-
-**Accessibility Compliance:**
-
-- WCAG 2.1 AA standard
-- Keyboard navigation works everywhere
-- Screen reader friendly (semantic HTML, ARIA labels)
-- Color contrast ratios ≥4.5:1
-- Focus indicators visible
-- Alt text on all images
+```typescript
+// NFC payment implementation for Wani
+// Reference: https://docs.expo.dev/versions/latest/sdk/nfc/
+// Note: NFC requires physical device, doesn't work in simulator
+// Gotcha: Must request permissions before using (VIBRATE, NFC)
+export const initiateNFCPayment = async (amount: number) => {
+  // Implementation here
+};
+```
 
 ---
 
 ## 📈 SUCCESS METRICS
 
-### Your Performance Improves When You:
+**You're doing great when:**
 
-1. **Complete P0 tasks first** (every single time)
+- ✅ Completing P0 tasks before P1/P2
+- ✅ TASKS.md always reflects current reality (updated after each task)
+- ✅ No errors introduced (tests pass, code runs clean)
+- ✅ Code follows all ARCHITECTURE.md conventions
+- ✅ Sprint progressing on schedule (~10% per day target)
+- ✅ All completions thoroughly tested before marking done
+- ✅ Communication is clear and specific
 
-   - P0 means blocker, drop everything else
-   - Document why it's P0 in task description
+**Signs you need to adjust:**
 
-2. **Document immediately** (not "later")
-
-   - Update TASKS.md right after completing task
-   - Add to PROGRESS.md same session
-   - Log errors in ERRORS.md as they happen
-
-3. **Prevent bugs with validation** (before they occur)
-
-   - Validate all inputs with Pydantic
-   - Check for None/null before accessing
-   - Use type hints to catch errors at dev time
-
-4. **Write clean, readable code** (self-documenting)
-
-   - Names are clear: `getUserBalance()` not `get()`
-   - Functions do one thing: `validateEmail()` not `validate()`
-   - Comments explain WHY not WHAT
-
-5. **Follow all framework rules** (100% compliance)
-
-   - Read .md files every session start
-   - Use correct file naming
-   - Follow API response format
-   - Match error handling pattern
-
-6. **Update tracking files promptly** (don't accumulate)
-
-   - TASKS.md after each task
-   - PROGRESS.md at end of session
-   - ERRORS.md when errors occur
-   - Never leave documentation for "later"
-
-7. **Test thoroughly** (before marking complete)
-
-   - Happy path works
-   - Error cases handled
-   - Edge cases covered
-   - Manual testing done
-
-8. **Communicate clearly** (in documentation)
-   - Session summaries are detailed
-   - Error descriptions are complete
-   - Decisions are explained
-   - Context is provided
+- ⚠️ P0 tasks being skipped for P1/P2
+- ⚠️ TASKS.md not updated (out of sync with reality)
+- ⚠️ Frequent bugs introduced by new code
+- ⚠️ Sprint falling significantly behind schedule
+- ⚠️ Convention violations (naming, structure, style)
+- ⚠️ Skipping testing ("will test later")
+- ⚠️ Working on multiple tasks simultaneously
 
 ---
 
-### Signs of a Good Session:
+## 📞 COMMUNICATION STYLE
 
-✅ **No new P0 errors introduced**
+### Good Communication
 
-- All code changes tested before commit
-- Error handling implemented proactively
-
-✅ **All tasks documented**
-
-- TASKS.md updated
-- PROGRESS.md has session summary
-- ERRORS.md reflects current state
-
-✅ **Code is tested**
-
-- Unit tests pass
-- Manual testing completed
-- No console errors
-
-✅ **Progress is measurable**
-
-- Can quantify what was completed
-- Clear view of remaining work
-- Sprint goals advancing
-
-✅ **Quality maintained**
-
-- Follows all conventions
-- Security standards met
-- Performance acceptable
-
----
-
-## 🔍 COMMON PATTERNS TO FOLLOW
-
-### Pattern 1: Error Handling (FastAPI)
-
-```python
-# app/services/wallet_service.py
-
-from fastapi import HTTPException
-from app.models.wallet import Wallet
-from app.core.logger import logger
-from decimal import Decimal
-from uuid import UUID
-
-class InsufficientBalanceError(Exception):
-    """Custom exception for insufficient balance"""
-    pass
-
-class WalletService:
-    async def transfer_money(
-        self,
-        from_user_id: UUID,
-        to_user_id: UUID,
-        amount: Decimal
-    ) -> dict:
-        """
-        Transfer money between users.
-
-        Raises:
-            HTTPException: 400 if insufficient balance
-            HTTPException: 404 if user not found
-            HTTPException: 500 if internal error
-        """
-        try:
-            # 1. Get wallets
-            from_wallet = await self.get_wallet(from_user_id)
-            to_wallet = await self.get_wallet(to_user_id)
-
-            if not from_wallet or not to_wallet:
-                raise HTTPException(
-                    status_code=404,
-                    detail={
-                        "code": "USER_NOT_FOUND",
-                        "message": "One or both users not found"
-                    }
-                )
-
-            # 2. Check balance
-            if from_wallet.balance_usdc < amount:
-                logger.warning(
-                    "Transfer failed: insufficient balance",
-                    extra={
-                        "user_id": str(from_user_id),
-                        "balance": str(from_wallet.balance_usdc),
-                        "requested": str(amount)
-                    }
-                )
-                raise HTTPException(
-                    status_code=400,
-                    detail={
-                        "code": "INSUFFICIENT_BALANCE",
-                        "message": f"Insufficient balance. Available: {from_wallet.balance_usdc}, Required: {amount}",
-                        "balance": str(from_wallet.balance_usdc),
-                        "required": str(amount)
-                    }
-                )
-
-            # 3. Execute transfer (atomic transaction)
-            async with self.db.begin():
-                from_wallet.balance_usdc -= amount
-                to_wallet.balance_usdc += amount
-
-                transaction = await self.create_transaction(
-                    from_user_id=from_user_id,
-                    to_user_id=to_user_id,
-                    amount=amount,
-                    type="p2p_transfer"
-                )
-
-            # 4. Success logging
-            logger.info(
-                "Transfer completed successfully",
-                extra={
-                    "transaction_id": str(transaction.id),
-                    "from_user": str(from_user_id),
-                    "to_user": str(to_user_id),
-                    "amount": str(amount)
-                }
-            )
-
-            return {
-                "transaction_id": str(transaction.id),
-                "status": "completed",
-                "amount": str(amount)
-            }
-
-        except HTTPException:
-            # Re-raise HTTP exceptions (already formatted)
-            raise
-
-        except Exception as e:
-            # Catch any unexpected errors
-            logger.error(
-                "Transfer failed with unexpected error",
-                exc_info=True,
-                extra={
-                    "from_user": str(from_user_id),
-                    "to_user": str(to_user_id),
-                    "amount": str(amount),
-                    "error": str(e)
-                }
-            )
-            raise HTTPException(
-                status_code=500,
-                detail={
-                    "code": "INTERNAL_ERROR",
-                    "message": "Transfer failed. Please try again."
-                }
-            )
+```
+✅ "Implementing user authentication in backend/app/services/user_service.py"
+✅ "Error: AttributeError: 'NoneType' object has no attribute 'id' at line 45"
+✅ "Added null check before accessing user.id: if user is None: raise NotFoundError"
+✅ "Completed 3 tasks: TASK-001 (repo setup), TASK-002 (folder structure), TASK-003 (docs)"
 ```
 
----
+### Poor Communication
 
-### Pattern 2: API Endpoint (FastAPI)
-
-```python
-# app/api/routes/wallet.py
-
-from fastapi import APIRouter, Depends, HTTPException
-from app.schemas.wallet import TransferRequest, TransferResponse
-from app.services.wallet_service import WalletService
-from app.api.deps import get_current_user, rate_limit
-from app.models.user import User
-
-router = APIRouter(prefix="/wallet", tags=["wallet"])
-
-@router.post(
-    "/transfer",
-    response_model=TransferResponse,
-    status_code=200,
-    summary="Transfer money between users",
-    description="Transfer USDC from authenticated user to another user"
-)
-async def transfer_money(
-    request: TransferRequest,
-    current_user: User = Depends(get_current_user),
-    _: None = Depends(rate_limit(max_requests=10, window=60))  # 10 requests per minute
-):
-    """
-    Transfer money from authenticated user to recipient.
-
-    - **to_user_id**: Recipient user UUID
-    - **amount**: Amount in USDC (must be > 0 and ≤ 10000)
-    - **note**: Optional transfer note (max 200 chars)
-
-    Returns transaction details with status.
-
-    Raises:
-    - 400: Insufficient balance or invalid input
-    - 404: Recipient not found
-    - 429: Rate limit exceeded
-    - 500: Internal server error
-    """
-    wallet_service = WalletService()
-
-    result = await wallet_service.transfer_money(
-        from_user_id=current_user.id,
-        to_user_id=request.to_user_id,
-        amount=request.amount
-    )
-
-    return {
-        "success": True,
-        "data": result,
-        "timestamp": datetime.utcnow().isoformat()
-    }
+```
+❌ "Working on backend"
+❌ "There's an error"
+❌ "Fixed"
+❌ "Done with stuff"
 ```
 
+**Always be:**
+
+- **Specific:** Name exact files, functions, line numbers
+- **Clear:** Describe problems and solutions concretely
+- **Honest:** Report actual progress, don't hide blockers
+- **Proactive:** Ask clarifying questions before making assumptions
+
 ---
 
-### Pattern 3: Pydantic Validation Schema
+## 🔐 SECURITY STANDARDS
+
+**CRITICAL SECURITY RULES:**
+
+### 1. Authentication
+
+- **Password Storage:** Hash with bcrypt, 10 rounds minimum
+- **JWT Tokens:**
+  - Access token: 15 minutes expiration
+  - Refresh token: 7 days expiration
+  - Store refresh token securely (httpOnly cookie or secure storage)
+- **Rate Limiting:** Max 5 login attempts per 15 minutes per IP (use slowapi)
+
+### 2. Stellar Wallet Security
+
+- **Secret Key Storage:** ALWAYS encrypt with Fernet before storing in database
+- **Encryption Key:** Store `ENCRYPTION_KEY` in .env, never commit
+- **Key Generation:** Use Stellar SDK's `Keypair.random()` for new wallets
+- **Never Log:** Secret keys should NEVER appear in logs, console, or error messages
 
 ```python
-# app/schemas/wallet.py
+# ✅ CORRECT: Encrypt secret key
+from cryptography.fernet import Fernet
 
-from pydantic import BaseModel, Field, validator
-from decimal import Decimal
-from uuid import UUID
-from typing import Optional
+cipher = Fernet(settings.ENCRYPTION_KEY)
+encrypted_secret = cipher.encrypt(secret_key.encode()).decode()
+wallet.stellar_secret_key = encrypted_secret
 
-class TransferRequest(BaseModel):
-    """Request schema for money transfer"""
+# ❌ WRONG: Store plaintext
+wallet.stellar_secret_key = secret_key  # NEVER DO THIS
+```
 
-    to_user_id: UUID = Field(
-        ...,
-        description="Recipient user ID"
-    )
+### 3. Input Validation
 
-    amount: Decimal = Field(
-        ...,
-        gt=0,
-        le=10000,
-        decimal_places=6,
-        description="Amount to transfer in USDC"
-    )
+- **Backend:** Use Pydantic models for ALL request validation
+- **Frontend:** Use Zod schemas for ALL form validation
+- **Sanitization:** Strip/escape HTML, prevent SQL injection
+- **File Uploads:** Validate file type, size, scan for malware if possible
 
-    note: Optional[str] = Field(
-        None,
-        max_length=200,
-        description="Optional note for transfer"
-    )
+```python
+# ✅ Backend validation
+class SendMoneyRequest(BaseModel):
+    to_wallet_address: str = Field(..., min_length=56, max_length=56)
+    amount_mxn: Decimal = Field(..., gt=0, le=100000)
 
-    @validator('amount')
-    def validate_amount(cls, v):
-        """Ensure amount has max 6 decimal places"""
-        if v.as_tuple().exponent < -6:
-            raise ValueError('Amount can have maximum 6 decimal places')
+    @validator('to_wallet_address')
+    def validate_stellar_address(cls, v):
+        if not v.startswith('G'):
+            raise ValueError('Invalid Stellar address')
         return v
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "to_user_id": "123e4567-e89b-12d3-a456-426614174000",
-                "amount": "100.50",
-                "note": "Payment for dinner"
-            }
-        }
-
-class TransferResponse(BaseModel):
-    """Response schema for money transfer"""
-
-    success: bool = Field(..., description="Operation success status")
-    data: dict = Field(..., description="Transaction details")
-    timestamp: str = Field(..., description="Response timestamp")
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "success": True,
-                "data": {
-                    "transaction_id": "123e4567-e89b-12d3-a456-426614174000",
-                    "status": "completed",
-                    "amount": "100.50"
-                },
-                "timestamp": "2025-10-15T10:30:00Z"
-            }
-        }
 ```
-
----
-
-### Pattern 4: React Component with Query
 
 ```typescript
-// frontend-web/src/features/wallet/components/TransactionList.tsx
+// ✅ Frontend validation
+const sendMoneySchema = z.object({
+  toAddress: z.string().min(56).max(56).startsWith("G"),
+  amount: z.number().positive().max(100000),
+});
+```
 
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Transaction } from "@/types";
-import { walletService } from "@/services/walletService";
-import { TransactionCard } from "./TransactionCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert } from "@/components/ui/alert";
+### 4. Environment Variables
 
-interface TransactionListProps {
-  userId?: string;
+**ALL secrets MUST be in .env files:**
+
+```bash
+# Backend .env
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
+JWT_SECRET=your-super-secret-min-32-chars
+ENCRYPTION_KEY=your-fernet-key
+STELLAR_SECRET_KEY=SXXXXXXXXXXXXX
+RESEND_API_KEY=re_xxxx
+CIRCULAR_API_KEY=xxx
+BITSO_API_KEY=xxx
+
+# Frontend .env
+VITE_API_URL=https://api.wani.app/v1
+EXPO_PUBLIC_API_URL=https://api.wani.app/v1
+```
+
+**NEVER commit .env files to git**
+
+### 5. API Security
+
+- **CORS:** Only allow specific origins (not `*` in production)
+- **Rate Limiting:** Implement on ALL endpoints (especially auth)
+- **HTTPS Only:** Force HTTPS in production (no HTTP)
+- **Security Headers:** Use helmet.js equivalent (FastAPI middleware)
+
+### 6. Data Protection
+
+- **Passwords:** bcrypt with 10+ rounds
+- **Sensitive Data:** Encrypt before storing (Stellar keys, API keys)
+- **SQL Injection:** Use ORM (SQLAlchemy), never raw SQL with string interpolation
+- **XSS Prevention:** Sanitize user input, escape output
+- **CSRF Protection:** Use CSRF tokens for state-changing operations
+
+---
+
+## 🔧 COMMON CODE PATTERNS
+
+### Error Handling Pattern (Backend - Python)
+
+```python
+@router.post("/auth/login", response_model=LoginResponse)
+async def login(
+    credentials: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    """User login endpoint."""
+    try:
+        # Authenticate user
+        user = await user_service.authenticate(
+            db,
+            credentials.email,
+            credentials.password
+        )
+
+        # Generate tokens
+        access_token = create_access_token(user.id)
+        refresh_token = create_refresh_token(user.id)
+
+        return {
+            "success": True,
+            "data": {
+                "user": user,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "Bearer"
+            },
+            "message": "Login successful"
+        }
+
+    except InvalidCredentialsError as e:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "success": False,
+                "error": {
+                    "message": "Invalid email or password",
+                    "code": "INVALID_CREDENTIALS",
+                    "status_code": 401
+                }
+            }
+        )
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "success": False,
+                "error": {
+                    "message": "Internal server error",
+                    "code": "INTERNAL_ERROR",
+                    "status_code": 500
+                }
+            }
+        )
+```
+
+### API Call Pattern (Frontend - TypeScript)
+
+```typescript
+// Service
+class AuthService {
+  async login(email: string, password: string): Promise<LoginResponse> {
+    try {
+      const response = await apiClient.post("/auth/login", {
+        email,
+        password,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || "Login failed");
+      }
+      throw error;
+    }
+  }
 }
 
-export function TransactionList({ userId }: TransactionListProps) {
-  const [page, setPage] = useState(1);
-  const limit = 20;
+// Hook
+export const useLogin = () => {
+  const navigate = useNavigate();
+  const { login: setAuthState } = useAuthStore();
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["transactions", page, limit, userId],
-    queryFn: () => walletService.getTransactions({ page, limit }),
-    staleTime: 30000, // 30 seconds
-    cacheTime: 300000, // 5 minutes
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  return useMutation({
+    mutationFn: ({ email, password }: LoginRequest) =>
+      authService.login(email, password),
+    onSuccess: (data) => {
+      // Save tokens and user to state
+      setAuthState(data.data.user, {
+        access_token: data.data.access_token,
+        refresh_token: data.data.refresh_token,
+      });
+
+      // Redirect to dashboard
+      navigate("/dashboard");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
   });
+};
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-20 w-full" />
-        ))}
-      </div>
-    );
-  }
+// Component usage
+const LoginForm = () => {
+  const { mutate: login, isPending } = useLogin();
 
-  // Error state
-  if (isError) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error loading transactions</AlertTitle>
-        <AlertDescription>
-          {error instanceof Error ? error.message : "Unknown error occurred"}
-        </AlertDescription>
-        <Button onClick={() => refetch()} className="mt-4">
-          Try Again
-        </Button>
-      </Alert>
-    );
-  }
+  const handleSubmit = (data: LoginFormData) => {
+    login(data);
+  };
 
-  // Empty state
-  if (!data?.data?.transactions?.length) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">No transactions yet</p>
-      </div>
-    );
-  }
-
-  // Success state
   return (
-    <div className="space-y-4">
-      {data.data.transactions.map((transaction: Transaction) => (
-        <TransactionCard key={transaction.id} transaction={transaction} />
-      ))}
-
-      {/* Pagination */}
-      {data.data.pagination.pages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          <Button
-            onClick={() => setPage(page - 1)}
-            disabled={page === 1}
-            variant="outline"
-          >
-            Previous
-          </Button>
-          <span className="py-2 px-4">
-            Page {page} of {data.data.pagination.pages}
-          </span>
-          <Button
-            onClick={() => setPage(page + 1)}
-            disabled={page === data.data.pagination.pages}
-            variant="outline"
-          >
-            Next
-          </Button>
-        </div>
-      )}
-    </div>
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      <button type="submit" disabled={isPending}>
+        {isPending ? "Logging in..." : "Login"}
+      </button>
+    </form>
   );
-}
+};
+```
+
+### Stellar Transaction Pattern
+
+```python
+from stellar_sdk import Server, Keypair, TransactionBuilder, Network, Asset
+
+class StellarService:
+    def __init__(self):
+        self.server = Server(horizon_url=settings.STELLAR_HORIZON_URL)
+
+    async def send_usdc(
+        self,
+        from_secret: str,  # Encrypted secret (decrypt first)
+        to_public: str,
+        amount: Decimal
+    ) -> str:
+        """Send USDC via Stellar. Returns transaction hash."""
+        try:
+            # Decrypt sender's secret key
+            from_keypair = Keypair.from_secret(from_secret)
+
+            # Load source account
+            source_account = await self.server.load_account(
+                from_keypair.public_key
+            )
+
+            # Build transaction
+            transaction = (
+                TransactionBuilder(
+                    source_account=source_account,
+                    network_passphrase=Network.TESTNET_NETWORK_PASSPHRASE,
+                    base_fee=100
+                )
+                .append_payment_op(
+                    destination=to_public,
+                    asset=USDC_ASSET,  # Define USDC asset constant
+                    amount=str(amount)
+                )
+                .set_timeout(30)
+                .build()
+            )
+
+            # Sign and submit
+            transaction.sign(from_keypair)
+            response = await self.server.submit_transaction(transaction)
+
+            logger.info(f"Stellar transaction successful: {response['hash']}")
+            return response['hash']
+
+        except Exception as e:
+            logger.error(f"Stellar transaction failed: {e}")
+            raise StellarTransactionError(str(e))
 ```
 
 ---
 
-## 🎯 REMEMBER
+## 🎯 SPRINT COMMITMENT
 
-### The Framework Exists To:
+**Sprint Goal:**
 
-1. **Maintain code quality**
+> Establecer infraestructura completa del proyecto y permitir que usuarios se registren, autentiquen y tengan wallet Stellar lista.
 
-   - Consistent patterns across codebase
-   - Easy for anyone to understand
-   - Reduces bugs and technical debt
+**To achieve this goal, we must complete:**
 
-2. **Track progress accurately**
+1. **US-000:** Project Infrastructure Setup (CRITICAL - blocks everything)
+2. **US-001:** User Registration with Email/Password
+3. **US-002:** User Login & JWT Token Management
+4. **US-004:** Create Stellar Wallet Automatically
 
-   - Always know what's done, in progress, blocked
-   - Sprint planning is reliable
-   - Stakeholders have visibility
+**Current progress toward goal:** 0% (Day 1 just starting)
 
-3. **Prevent repeated errors**
+**Days remaining:** 10 days
 
-   - ERRORS.md documents solutions
-   - Don't waste time on same problem twice
-   - Build knowledge base
+**Blockers to goal:** None yet
 
-4. **Ensure project success**
-
-   - MVP launches on time (8 weeks)
-   - Features work reliably
-   - Security is not compromised
-
-5. **Facilitate collaboration**
-   - Any developer can jump in
-   - Context is documented
-   - Handoffs are smooth
+**Minimum viable success:** If we complete US-000, US-001, US-002, and US-004, the Sprint Goal is achieved. US-003 (KYC) and US-005 (Balance Display) are important but can move to Sprint 2 if needed.
 
 ---
 
-### Never Compromise On:
+## 📚 QUICK REFERENCE
 
-1. **Security standards**
+### File Reading Order (Every Session Start)
 
-   - Input validation (always)
-   - Authentication checks (always)
-   - Secrets management (environment variables only)
-   - Audit logging (financial transactions)
-   - Rate limiting (public endpoints)
+1. **CLAUDE.md** (this file) ← You're here
+2. **ARCHITECTURE.md** (technical details)
+3. **docs/sprints/sprint-01/tasks.md** (what to work on)
+4. **docs/sprints/sprint-01/planning.md** (sprint context)
+5. **PRODUCT-BACKLOG.md** (overall product vision)
 
-2. **Code documentation**
+### Priority Order (Always)
 
-   - Docstrings on public functions
-   - Comments for complex logic
-   - TASKS.md updates after completion
-   - PROGRESS.md session summaries
-   - ERRORS.md for all issues
+1. **P0 (Critical)** - Setup, blockers, security issues → Do FIRST, always
+2. **P1 (Important)** - Sprint backlog stories → After all P0
+3. **P2 (Nice to have)** - Polish, refactoring → Only if no P0/P1
 
-3. **Error handling**
+### Update Requirements
 
-   - Try-catch around async operations
-   - Specific error messages
-   - Logging with context
-   - User-friendly responses
-   - Graceful degradation
+- ✅ **TASKS.md** after EVERY task completion (with timestamp + actual time)
+- ✅ **Session summary** at end of work session
+- ✅ **Blockers** immediately when discovered (don't wait)
+- ✅ **Sprint health** if falling behind schedule
 
-4. **Task tracking**
+### Quality Gates (Before marking task complete)
 
-   - Update TASKS.md immediately after completion
-   - Document blockers in real-time
-   - Keep PROGRESS.md current
-   - Maintain accurate sprint status
-
-5. **Testing discipline**
-   - Test after every change
-   - Cover edge cases
-   - Manual verification
-   - Unit tests for business logic
-   - E2E tests for critical flows
+- ✅ All Acceptance Criteria met
+- ✅ Code tested and working (no errors)
+- ✅ Conventions followed (naming, structure, style)
+- ✅ Error handling implemented
+- ✅ Security checks passed
+- ✅ Documentation updated (if needed)
 
 ---
 
-## 📅 CURRENT SPRINT INFORMATION
+## 📄 DOCUMENT UPDATES
 
-**Sprint:** MVP Development (8 weeks)  
-**Sprint Goal:** Launch beta with 50 users, all core features functional  
-**Sprint Start Date:** [To be filled when development starts]  
-**Sprint End Date:** [Start date + 8 weeks]
+**This document is updated:**
 
-**Week Breakdown:**
+- At start of each new sprint (Sprint context section)
+- When ARCHITECTURE.md changes (Technical standards section)
+- When project-specific rules change (Business logic section)
+- When new patterns emerge (Common code patterns section)
 
-- Week 1-2: Foundation (Auth, Database, Stellar)
-- Week 3-4: Remittance Flow (Send/Receive, Circle)
-- Week 5-6: Payments (NFC/QR, Merchant Dashboard)
-- Week 7: Cash-out (Bitso Integration)
-- Week 8: Polish & Launch (Security, Testing, Beta)
+**Last Sprint Update:** Sprint 1 - 2024-12-20  
+**Next Scheduled Update:** Sprint 2 - 2025-01-06
 
-**Current Week:** [To be updated]  
-**Current Day:** [To be updated]
+**Archive Process:**
 
-**Sprint Velocity Target:**
-
-- 15 tasks per week average
-- 120 total tasks for MVP
-- 2-3 hours per task average
-
-**Definition of Done:**
-
-- Code runs without errors
-- All tests pass
-- Documented in TASKS.md, PROGRESS.md
-- Security checklist complete
-- Manual testing verified
-- Code reviewed (if team)
-- Deployed to staging
+- At end of Sprint 1, archive this version to `docs/sprints/sprint-01/CLAUDE.md`
+- Generate new version for Sprint 2 with updated context
 
 ---
 
-_This document is the source of truth for development behavior. Follow it strictly for project success._
+## ⚡ TL;DR - CRITICAL RULES
 
-**Last Updated:** October 15, 2025  
-**Version:** 1.0  
-**Maintained By:** Engineering Team  
-**Next Review:** Weekly during sprint
+**If you remember ONLY these 10 rules:**
+
+1. 📖 **Read CLAUDE.md, ARCHITECTURE.md, TASKS.md at EVERY session start**
+2. 🔴 **P0 tasks ALWAYS come first** (drop everything for P0)
+3. ✏️ **Update TASKS.md after EVERY completion** (with timestamp)
+4. 🎯 **Stay focused on Sprint Goal** (Infrastructure + Auth + Wallet)
+5. 🏗️ **Follow ARCHITECTURE.md conventions exactly** (naming, structure, patterns)
+6. 🧪 **Test everything before marking complete** (manual testing mandatory)
+7. 🚫 **Never skip error handling** (try-catch/except ALL async ops)
+8. 💬 **Communicate clearly and specifically** (exact files, line numbers, errors)
+9. ⏸️ **Mark blockers immediately** (don't waste >10 min stuck)
+10. ✅ **Complete Quality Checklist before task done** (all checkboxes)
+
+**Bonus Security Rules:**
+
+- 🔐 Encrypt Stellar secret keys before database storage
+- 🔑 Hash passwords with bcrypt (10 rounds min)
+- 🚫 Never commit .env files or secrets
+- ⏱️ Rate limit auth endpoints (5 attempts/15 min)
+
+---
+
+**"Quality code, properly documented, delivered on time. That's the Wani standard."**
+
+---
+
+**Current Sprint:** Sprint 1  
+**Sprint Goal:** Infrastructure + Auth + Wallet  
+**Days Remaining:** 10  
+**Next P0 Task:** TASK-001 (Create GitHub repository)
+
+**Status:** 🟢 Ready to start
+
+---
+
+_This is your source of truth. Follow it strictly. When in doubt, refer back to this document._

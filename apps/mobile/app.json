@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Wani",
+    "slug": "wani-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "wani",
+    "web": {
+      "bundler": "metro"
+    },
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF7ED"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wani.mobile",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFF7ED"
+      },
+      "package": "com.wani.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_CONTACTS",
+        "VIBRATE"
+      ],
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "wani-mobile"
+      },
+      "apiUrl": "http://192.168.12.122:9000"
+    }
+  }
+}
