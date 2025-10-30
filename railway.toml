@@ -1,0 +1,27 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd backend && pip install -r requirements.txt"
+
+[deploy]
+startCommand = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+# Environment variables that should be set in Railway dashboard:
+# - NODE_ENV=staging
+# - DEBUG=False
+# - DATABASE_URL (from Supabase)
+# - SUPABASE_URL
+# - SUPABASE_KEY
+# - SUPABASE_JWT_SECRET
+# - REDIS_URL (from Upstash)
+# - JWT_SECRET
+# - STELLAR_NETWORK=testnet
+# - STELLAR_HOT_WALLET_SECRET
+# - STELLAR_COLD_WALLET_PUBLIC
+# - CIRCLE_API_KEY (optional)
+# - CIRCLE_ACCOUNT_ID (optional)
+# - SENTRY_DSN (optional)

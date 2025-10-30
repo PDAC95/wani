@@ -3,8 +3,8 @@ Wani - Configuration Management
 Centralized configuration using Pydantic Settings
 """
 
-from pydantic_settings import BaseSettings
-from pydantic import Field, validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
 from typing import List, Optional
 import os
 
@@ -37,6 +37,10 @@ class Settings(BaseSettings):
 
     # Stellar Blockchain Configuration
     STELLAR_NETWORK: str = Field(default="testnet", description="Stellar network: testnet or public")
+    STELLAR_HORIZON_URL: str = Field(
+        default="https://horizon-testnet.stellar.org",
+        description="Stellar Horizon API URL"
+    )
     STELLAR_HOT_WALLET_SECRET: str = Field(..., description="Hot wallet secret key (ENCRYPTED)")
     STELLAR_COLD_WALLET_PUBLIC: str = Field(..., description="Cold wallet public key")
     STELLAR_USDC_ISSUER: str = Field(
@@ -69,10 +73,16 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: Optional[str] = Field(default=None, description="Twilio auth token")
     TWILIO_PHONE_NUMBER: Optional[str] = Field(default=None, description="Twilio phone number")
 
-    # SendGrid Configuration (Email)
+    # SendGrid Configuration (Email - Legacy)
     SENDGRID_API_KEY: Optional[str] = Field(default=None, description="SendGrid API key")
     SENDGRID_FROM_EMAIL: str = Field(default="noreply@wani.app", description="Sender email")
     SENDGRID_FROM_NAME: str = Field(default="Wani", description="Sender name")
+
+    # Resend Configuration (Email - Modern)
+    RESEND_API_KEY: Optional[str] = Field(default=None, description="Resend API key")
+    RESEND_FROM_EMAIL: str = Field(default="noreply@wani.app", description="Sender email (must be verified)")
+    RESEND_FROM_NAME: str = Field(default="Wani", description="Sender name")
+    FRONTEND_URL: str = Field(default="http://localhost:5173", description="Frontend URL for email links")
 
     # Sentry Configuration (Error Tracking)
     SENTRY_DSN: Optional[str] = Field(default=None, description="Sentry DSN for error tracking")
@@ -101,7 +111,7 @@ class Settings(BaseSettings):
     FRONTEND_WEB_URL: str = Field(default="http://localhost:5173", description="Frontend web URL")
     FRONTEND_MOBILE_URL: str = Field(default="exp://localhost:8081", description="Frontend mobile URL")
     ALLOWED_ORIGINS: Optional[str] = Field(
-        default="http://localhost:5173,http://localhost:3000",
+        default="http://localhost:5173,http://localhost:3000,http://localhost:8081",
         description="Comma-separated list of allowed CORS origins"
     )
 
@@ -116,7 +126,8 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = Field(default="redis://localhost:6379/0", description="Celery broker URL")
     CELERY_RESULT_BACKEND: str = Field(default="redis://localhost:6379/0", description="Celery result backend")
 
-    @validator("NODE_ENV")
+    @field_validator("NODE_ENV")
+    @classmethod
     def validate_environment(cls, v):
         """Validate environment is one of allowed values"""
         allowed = ["development", "staging", "production"]
@@ -124,7 +135,8 @@ class Settings(BaseSettings):
             raise ValueError(f"NODE_ENV must be one of {allowed}")
         return v
 
-    @validator("STELLAR_NETWORK")
+    @field_validator("STELLAR_NETWORK")
+    @classmethod
     def validate_stellar_network(cls, v):
         """Validate Stellar network is testnet or public"""
         allowed = ["testnet", "public"]
@@ -132,7 +144,8 @@ class Settings(BaseSettings):
             raise ValueError(f"STELLAR_NETWORK must be one of {allowed}")
         return v
 
-    @validator("JWT_ALGORITHM")
+    @field_validator("JWT_ALGORITHM")
+    @classmethod
     def validate_jwt_algorithm(cls, v):
         """Validate JWT algorithm"""
         allowed = ["HS256", "HS384", "HS512"]
@@ -152,11 +165,12 @@ class Settings(BaseSettings):
             return [ft.strip() for ft in self.ALLOWED_FILE_TYPES.split(",") if ft.strip()]
         return self.ALLOWED_FILE_TYPES
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
-        extra = "ignore"  # Ignore extra fields from .env
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",  # Ignore extra fields from .env
+    )
 
 
 # Create global settings instance

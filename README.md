@@ -1,253 +1,614 @@
-# 💰 Wani - Peace of Mind Remittance Platform
+# Wani
 
-> Next-generation remittance platform enabling instant, low-cost money transfers from USA to Mexico with integrated digital wallet and NFC payment capabilities.
+**Cross-border payment fintech platform powered by Stellar blockchain**
 
-**Wani (和)** - Japanese for "peace, harmony" - bringing peace of mind to every cross-border transaction.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Planning](https://img.shields.io/badge/Status-Planning-blue.svg)](https://github.com/YOUR_USERNAME/wani-platform)
+Send money from USA to Mexico instantly with USDC on Stellar, converting to MXN for cash-out.
 
 ---
 
-## ✨ Features
+## Overview
 
-- 💸 **Low-Cost Remittances** - 2% fee vs 6-8% traditional services
-- ⚡ **Instant Wallet Credit** - Recipients get money immediately
-- 📱 **NFC Payments** - Pay merchants with a tap (0% fee)
-- 🏦 **Fast Cash-Out** - Withdraw to Mexican bank in 7-10 minutes
-- 🔒 **Secure** - Bank-level security with blockchain transparency
-- 📊 **Merchant Dashboard** - Track sales and manage business
+Wani is a fintech application that enables cross-border payments between the United States and Mexico using the Stellar blockchain network. Users can send USD from the US, which is converted to USDC on Stellar, and recipients can cash out in MXN in Mexico.
 
----
+### Key Features
 
-## 🎯 Mission
-
-Wani empowers cross-border workers and their families by providing:
-
-- **Peace (和 - Wa):** Financial security through low fees and instant transfers
-- **Connection:** Keeping families connected across borders
-- **Prosperity:** More money reaching loved ones, less to intermediaries
-- **Accessibility:** Easy-to-use platform for everyone, regardless of tech skills
+- 🚀 **Instant transfers** using Stellar blockchain
+- 💰 **Low fees** compared to traditional remittance services
+- 🔒 **Secure** with KYC verification and blockchain transparency
+- 📱 **Mobile-first** with web support
+- 💵 **USD → USDC → MXN** conversion flow
+- 🌐 **Multi-platform**: Web app, iOS, and Android
 
 ---
 
-## 📚 Documentation
-
-- [📄 Product Requirements (PRD)](docs/prd.md) - Complete product specification
-- [🏗️ Technical Architecture (PLANNING)](docs/planning.md) - System design and tech stack
-- [📋 Task Roadmap (TASKS)](docs/tasks.md) - 8-week development plan
-- [🎨 Design System (DESIGN)](docs/design.md) - Brand identity and color palette
-- [🔧 Development Rules (CLAUDE)](docs/claude.md) - Development framework and standards
-- [📊 Progress Tracking (PROGRESS)](docs/progress.md) - Daily development log
-- [🐛 Error Log (ERRORS)](docs/errors.md) - Known issues and solutions
-- [🔄 Git Workflow (GITHUB)](docs/github.md) - Version control and CI/CD
-
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
-- **Framework:** FastAPI (Python 3.11+)
-- **Database:** PostgreSQL 15 (Supabase)
-- **Cache:** Redis 7
-- **Queue:** Celery
-- **Blockchain:** Stellar SDK (USDC)
-- **Testing:** Pytest
+- **Framework:** FastAPI (Python 3.13)
+- **Database:** PostgreSQL (Supabase)
+- **Cache:** Redis (Upstash)
+- **Blockchain:** Stellar SDK
+- **Migrations:** Alembic
+- **Background Jobs:** Celery
+- **Deployment:** Railway
 
 ### Frontend Web
-- **Framework:** React 18 + TypeScript
-- **Build:** Vite
-- **Styling:** Tailwind CSS + shadcn/ui
-- **State:** TanStack Query + Zustand
-- **Testing:** Vitest + Playwright
+- **Framework:** React 18 + Vite
+- **Language:** TypeScript
+- **Routing:** React Router v7
+- **State:** Zustand + TanStack Query
+- **Styling:** Tailwind CSS
+- **HTTP Client:** Axios
+- **Deployment:** Vercel
 
-### Frontend Mobile
-- **Framework:** React Native + Expo SDK 50
+### Mobile
+- **Framework:** Expo + React Native
+- **Language:** TypeScript
+- **Navigation:** React Navigation + Expo Router
 - **Styling:** NativeWind (Tailwind for RN)
-- **Navigation:** Expo Router
-- **Testing:** Jest
+- **State:** Zustand + TanStack Query
+- **Deployment:** EAS (Expo Application Services)
 
-### Infrastructure
-- **Hosting:** Vercel (web), Railway (backend), EAS (mobile)
-- **Database:** Supabase
-- **Monitoring:** Sentry
-- **CI/CD:** GitHub Actions
+### External Integrations
+- **Circle API:** USD → USDC conversion
+- **Bitso API:** USDC → MXN conversion and cash-out
+- **Stellar Network:** USDC transfers on blockchain
+- **Twilio:** SMS OTP authentication
+- **SendGrid:** Email notifications
+- **Sentry:** Error tracking
 
 ---
 
-## 🚀 Quick Start
+## Project Structure
 
-### Prerequisites
-
-- **Backend:** Python 3.11+, PostgreSQL 15+, Redis 7+
-- **Frontend Web:** Node.js 18+, pnpm 8+
-- **Frontend Mobile:** Node.js 18+, Expo CLI
-- **Accounts:** Supabase, Railway, Vercel, Circle, Bitso (sandbox)
-
-### Installation
-
-#### 1. Clone Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/wani-platform.git
-cd wani-platform
+```
+wani/
+├── backend/                 # FastAPI backend
+│   ├── app/
+│   │   ├── core/           # Config, database, cache
+│   │   ├── models/         # SQLAlchemy models
+│   │   ├── services/       # Business logic (Stellar, payments)
+│   │   ├── api/            # API routes
+│   │   └── middleware/     # Error handling, CORS
+│   ├── alembic/            # Database migrations
+│   ├── scripts/            # Utility scripts
+│   ├── requirements.txt    # Python dependencies
+│   └── Dockerfile          # Docker configuration
+│
+├── apps/
+│   ├── web/                # React web app
+│   │   ├── src/
+│   │   │   ├── app/        # Application code
+│   │   │   │   ├── core/   # Providers, API client, stores
+│   │   │   │   ├── routes/ # React Router configuration
+│   │   │   │   ├── pages/  # Page components
+│   │   │   │   └── components/ # Reusable components
+│   │   │   └── styles/     # Global styles
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   │
+│   └── mobile/             # React Native mobile app
+│       ├── src/
+│       │   └── app/
+│       │       ├── navigation/  # Navigation setup
+│       │       ├── screens/     # Screen components
+│       │       ├── components/  # Reusable components
+│       │       └── core/        # API, stores
+│       ├── app.json        # Expo configuration
+│       ├── eas.json        # EAS build profiles
+│       └── package.json
+│
+├── docs/                   # Project documentation
+│   ├── 1. PRD.md
+│   ├── 2. Architecture.md
+│   ├── 3. Product Backlog.md
+│   ├── 4. Sprint Plan s.1.md
+│   └── 5. Tasks s.1.md
+│
+├── .github/
+│   ├── workflows/          # GitHub Actions CI/CD
+│   └── SECRETS_SETUP.md    # Secrets configuration guide
+│
+└── README.md               # This file
 ```
 
-#### 2. Backend Setup
+---
+
+## Prerequisites
+
+### Required
+
+- **Node.js:** v20 or higher
+- **Python:** 3.13 or higher
+- **Git:** Latest version
+- **PostgreSQL:** 14+ (or Supabase account)
+- **Redis:** 6+ (or Upstash account)
+
+### Optional (for mobile development)
+
+- **Expo CLI:** `npm install -g expo-cli`
+- **EAS CLI:** `npm install -g eas-cli`
+- **iOS Simulator** (macOS only)
+- **Android Studio** (for Android emulator)
+
+---
+
+## Getting Started
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/PDAC95/wani.git
+cd wani
+```
+
+### 2. Backend Setup
+
+#### Install Dependencies
 
 ```bash
 cd backend
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-# Setup environment variables
+#### Configure Environment
+
+```bash
 cp .env.example .env
-# Edit .env with your credentials
+```
 
-# Run migrations
+Edit `.env` and fill in your credentials:
+
+```env
+# Database (Supabase)
+DATABASE_URL=postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_KEY=your-supabase-anon-key
+SUPABASE_JWT_SECRET=your-jwt-secret
+
+# Redis (Upstash)
+REDIS_URL=redis://:password@xxx.upstash.io:6379
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+
+# Stellar (Testnet for development)
+STELLAR_NETWORK=testnet
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_HOT_WALLET_SECRET=SXXXXX...
+STELLAR_COLD_WALLET_PUBLIC=GXXXXX...
+```
+
+**Generate JWT Secret:**
+```bash
+openssl rand -base64 32
+```
+
+**Generate Stellar Wallet:**
+```bash
+python scripts/test_stellar.py
+```
+
+#### Run Migrations
+
+```bash
 alembic upgrade head
-
-# Start server
-uvicorn app.main:app --reload
-# API available at http://localhost:8000
 ```
 
-#### 3. Frontend Web Setup
+#### Start Backend
+
+⚠️ **IMPORTANT (Windows users):** Always use `run_server.py` to start the backend:
 
 ```bash
-cd frontend-web
-
-# Install dependencies
-pnpm install
-
-# Setup environment variables
-cp .env.example .env.local
-# Edit .env.local with your API URL
-
-# Start dev server
-pnpm dev
-# App available at http://localhost:5173
+python run_server.py
 ```
 
-#### 4. Frontend Mobile Setup
+**DO NOT** use `uvicorn app.main:app` directly on Windows - it bypasses the event loop configuration required for psycopg3.
+
+Backend running at: **http://localhost:9000**
+
+API docs: **http://localhost:9000/api/docs**
+
+### 3. Web Frontend Setup
 
 ```bash
-cd frontend-mobile
-
-# Install dependencies
+cd apps/web
 npm install
-
-# Start Expo
-npx expo start
-# Scan QR code with Expo Go app
 ```
 
----
+#### Configure Environment
 
-## 🗺️ Roadmap
+```bash
+cp .env.example .env
+```
 
-### MVP (8 Weeks) - In Progress
+Edit `.env`:
 
-- [ ] **Week 1:** Foundation & Authentication
-- [ ] **Week 2:** Wallet Core Features
-- [ ] **Week 3:** Remittance Flow
-- [ ] **Week 4:** NFC Payments
-- [ ] **Week 5:** Cash-Out Integration
-- [ ] **Week 6:** Merchant Dashboard
-- [ ] **Week 7:** Security & Testing
-- [ ] **Week 8:** Beta Launch (50 users)
+```env
+VITE_API_URL=http://localhost:9000
+```
 
-### v2.0 (Post-MVP)
+#### Start Web App
 
-- [ ] Instant remittance with debit card
-- [ ] Biometric authentication
-- [ ] Scheduled/recurring transfers
-- [ ] Physical/virtual debit card
-- [ ] Additional corridors (Colombia, Guatemala, El Salvador)
+```bash
+npm run dev
+```
 
----
+Web app running at: **http://localhost:5173**
 
-## 🎨 Brand Identity
+### 4. Mobile App Setup
 
-**Colors:**
-- **Coral Primary:** #FB923C (Warmth, family connection, prosperity)
-- **Brown Neutral:** #292524 (Stability, security, grounding)
-- **Cream Background:** #FFF7ED (Approachable, warm, comfortable)
+```bash
+cd apps/mobile
+npm install
+```
 
-**Logo:** Flowing "W" with three circles representing community and the flow of money across borders.
+#### Login to Expo
 
-See [DESIGN.md](docs/design.md) for complete design system.
+```bash
+npx expo login
+```
 
----
+Credentials:
+- Email: `dev@jappi.ca`
+- Password: `Password123`
 
-## 📊 Key Metrics (Target)
+#### Start Mobile App
 
-**Month 1:**
-- $50,000 in remittance volume
-- 200 registered users
-- 20 active merchants
+**Same Network (recommended):**
+```bash
+npx expo start
+```
 
-**Month 3:**
-- $200,000 in remittance volume
-- 500 registered users
-- 50 active merchants
+**Different Networks (using tunnel):**
+```bash
+npx expo start --tunnel
+```
 
-**Year 1:**
-- $5M in remittance volume
-- 5,000 registered users
-- 200 active merchants
-- Expansion to 2 additional countries
+Scan QR code with:
+- **iOS:** Camera app
+- **Android:** Expo Go app
 
 ---
 
-## 🤝 Contributing
+## Development Workflow
 
-We welcome contributions to Wani! Please see our contributing guidelines:
+### Backend Development
+
+1. **Create migration:**
+   ```bash
+   cd backend
+   alembic revision --autogenerate -m "description"
+   ```
+
+2. **Apply migration:**
+   ```bash
+   alembic upgrade head
+   ```
+
+3. **Run tests:**
+   ```bash
+   pytest
+   ```
+
+4. **Code formatting:**
+   ```bash
+   black .
+   isort .
+   ```
+
+5. **Linting:**
+   ```bash
+   flake8 app/
+   mypy app/
+   ```
+
+### Frontend Development
+
+1. **Run linting:**
+   ```bash
+   npm run lint
+   ```
+
+2. **Format code:**
+   ```bash
+   npx prettier --write "src/**/*.{ts,tsx}"
+   ```
+
+3. **Type check:**
+   ```bash
+   npx tsc --noEmit
+   ```
+
+4. **Build:**
+   ```bash
+   npm run build
+   ```
+
+### Mobile Development
+
+1. **Run on iOS simulator:**
+   ```bash
+   npx expo start --ios
+   ```
+
+2. **Run on Android emulator:**
+   ```bash
+   npx expo start --android
+   ```
+
+3. **Clear cache:**
+   ```bash
+   npx expo start --clear
+   ```
+
+4. **Build APK (development):**
+   ```bash
+   eas build --profile development --platform android
+   ```
+
+---
+
+## Testing
+
+### Backend Tests
+
+```bash
+cd backend
+pytest
+pytest --cov=app tests/  # With coverage
+```
+
+### Stellar Service Test
+
+```bash
+cd backend
+python scripts/test_stellar.py
+```
+
+This will:
+- Create a test wallet
+- Fund it on testnet
+- Verify Stellar connection
+- Test all service methods
+
+---
+
+## Deployment
+
+### Backend (Railway)
+
+1. **Install Railway CLI:**
+   ```bash
+   npm install -g @railway/cli
+   ```
+
+2. **Login:**
+   ```bash
+   railway login
+   ```
+
+3. **Deploy:**
+   ```bash
+   cd backend
+   railway up
+   ```
+
+See: [backend/RAILWAY_DEPLOYMENT.md](backend/RAILWAY_DEPLOYMENT.md)
+
+### Frontend Web (Vercel)
+
+1. **Install Vercel CLI:**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Deploy:**
+   ```bash
+   cd apps/web
+   vercel
+   ```
+
+See: [apps/web/VERCEL_DEPLOYMENT.md](apps/web/VERCEL_DEPLOYMENT.md)
+
+### Mobile (EAS)
+
+1. **Configure EAS:**
+   ```bash
+   cd apps/mobile
+   eas build:configure
+   ```
+
+2. **Build APK:**
+   ```bash
+   eas build --profile production --platform android
+   ```
+
+3. **Build IPA:**
+   ```bash
+   eas build --profile production --platform ios
+   ```
+
+4. **Submit to stores:**
+   ```bash
+   eas submit --platform android
+   eas submit --platform ios
+   ```
+
+See: [apps/mobile/EAS_SETUP.md](apps/mobile/EAS_SETUP.md)
+
+---
+
+## Environment Variables
+
+### Backend (.env)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `REDIS_URL` | Yes | Redis connection string |
+| `JWT_SECRET` | Yes | JWT signing secret (min 32 chars) |
+| `STELLAR_NETWORK` | Yes | `testnet` or `public` |
+| `STELLAR_HORIZON_URL` | Yes | Stellar Horizon API URL |
+| `STELLAR_HOT_WALLET_SECRET` | Yes | Hot wallet secret key |
+| `CIRCLE_API_KEY` | No | Circle API key (USD → USDC) |
+| `BITSO_API_KEY` | No | Bitso API key (USDC → MXN) |
+| `TWILIO_ACCOUNT_SID` | No | Twilio SMS SID |
+| `SENDGRID_API_KEY` | No | SendGrid email API key |
+| `SENTRY_DSN` | No | Sentry error tracking DSN |
+
+### Frontend Web (.env)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_API_URL` | Yes | Backend API URL |
+
+### Mobile (eas.json)
+
+Environment variables configured per build profile in `eas.json`:
+
+- **development:** `http://localhost:9000`
+- **preview:** `https://wani-api-preview.railway.app`
+- **production:** `https://wani-api.railway.app`
+
+---
+
+## CI/CD
+
+### GitHub Actions Workflows
+
+1. **Backend CI** (`.github/workflows/ci-backend.yml`)
+   - Runs on push to `main`/`develop`
+   - Black, Flake8, isort, mypy
+   - Bandit security scan
+
+2. **Frontend CI** (`.github/workflows/ci-web.yml`)
+   - Runs on push to `main`/`develop`
+   - ESLint, Prettier, TypeScript check
+   - Build verification
+
+### GitHub Secrets Required
+
+See: [.github/SECRETS_SETUP.md](.github/SECRETS_SETUP.md)
+
+Required secrets:
+- `DATABASE_URL`
+- `REDIS_URL`
+- `JWT_SECRET`
+- `RAILWAY_TOKEN`
+- `VERCEL_TOKEN`
+- `STELLAR_HOT_WALLET_SECRET`
+
+---
+
+## Troubleshooting
+
+### Backend won't start
+
+**Problem:** `ModuleNotFoundError` or import errors
+
+**Solution:**
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### Database connection fails
+
+**Problem:** `sqlalchemy.exc.OperationalError`
+
+**Solution:**
+- Verify `DATABASE_URL` in `.env`
+- Check Supabase project is not paused
+- Verify network connectivity
+
+### psycopg3 ProactorEventLoop error (Windows only)
+
+**Problem:** `psycopg.InterfaceError: Psycopg cannot use the 'ProactorEventLoop' to run in async mode`
+
+**Solution:**
+This happens when starting the backend with `uvicorn app.main:app` directly instead of using `run_server.py`.
+
+**ALWAYS start the backend with:**
+```bash
+cd backend
+python run_server.py
+```
+
+**Why:** The psycopg3 async driver requires SelectorEventLoop on Windows. The `run_server.py` script sets up the correct event loop policy BEFORE uvicorn starts, which is essential for database connectivity on Windows.
+
+### Mobile app shows no styles
+
+**Problem:** NativeWind styles not applying
+
+**Solution:**
+```bash
+cd apps/mobile
+rm -rf node_modules/.cache
+rm -rf .expo
+npx expo start --clear
+```
+
+### Stellar service fails
+
+**Problem:** Account not found or funding fails
+
+**Solution:**
+- Verify `STELLAR_NETWORK=testnet` in `.env`
+- Check `STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org`
+- Run test script: `python scripts/test_stellar.py`
+
+---
+
+## Documentation
+
+- **PRD:** [docs/1. PRD.md](docs/1.%20PRD.md)
+- **Architecture:** [docs/2. Architecture.md](docs/2.%20Architecture.md)
+- **Product Backlog:** [docs/3. Product Backlog.md](docs/3.%20Product%20Backlog.md)
+- **Sprint Plan:** [docs/4. Sprint Plan s.1.md](docs/4.%20Sprint%20Plan%20s.1.md)
+- **Tasks:** [docs/5. Tasks s.1.md](docs/5.%20Tasks%20s.1.md)
+
+---
+
+## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes using conventional commits (`git commit -m 'feat(scope): add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-See [GITHUB.md](docs/github.md) for detailed workflow.
+### Code Style
+
+- **Python:** Black, Flake8, isort
+- **TypeScript:** ESLint, Prettier
+- **Commits:** Conventional Commits format
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-## 👥 Team
-
-- **Lead Developer:** [@YOUR_GITHUB_USERNAME](https://github.com/YOUR_GITHUB_USERNAME)
+This project is proprietary and confidential.
 
 ---
 
-## 🙏 Acknowledgments
+## Contact
 
-- [Stellar Development Foundation](https://stellar.org) - Blockchain infrastructure
-- [Circle](https://circle.com) - USDC stablecoin provider
-- [Bitso](https://bitso.com) - Mexican cash-out partner
-- [Supabase](https://supabase.com) - Database hosting
+**Email:** dev@jappi.ca
 
----
-
-## 📞 Contact
-
-- **Website:** [Coming Soon]
-- **Email:** support@wani.app
-- **Twitter:** [@WaniApp](https://twitter.com/WaniApp)
+**Repository:** https://github.com/PDAC95/wani
 
 ---
 
-**Built with ❤️ for the global community**
+## Acknowledgments
 
-_Wani - Peace of mind in every transaction (和 - Wa: Peace, Harmony)_
+- **Stellar Development Foundation** - Blockchain infrastructure
+- **Circle** - USD to USDC conversion
+- **Bitso** - USDC to MXN conversion
+- **Supabase** - Database and auth infrastructure
+- **Upstash** - Redis caching
+- **Railway** - Backend hosting
+- **Vercel** - Frontend hosting
+- **Expo** - Mobile development platform

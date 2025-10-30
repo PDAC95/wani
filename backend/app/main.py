@@ -3,17 +3,31 @@ Wani - FastAPI Main Application
 Entry point for the FastAPI backend server
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import logging
+import sys
+import asyncio
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+# Windows-specific event loop configuration for psycopg3
+if sys.platform == 'win32':
+    # Set the event loop policy to use selector on Windows
+    # This is required for psycopg3 async to work on Windows
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Import core modules
 from app.core.config import settings
 from app.core.logger import get_logger
 from app.core.database import init_db, close_db, check_db_health
+from app.core.rate_limit import limiter
 from app.middleware import setup_exception_handlers
+
+# Import API routers
+from app.api.v1 import router as api_v1_router
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -27,17 +41,37 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Setup exception handlers
 setup_exception_handlers(app)
 
 # Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.get_allowed_origins(),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# In development, allow all origins for easier mobile testing
+# In production, use specific allowed origins from settings
+if settings.NODE_ENV == "development":
+    logger.info("CORS: Allowing all origins (development mode)")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Allow all origins in development
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    logger.info(f"CORS: Allowing specific origins: {settings.get_allowed_origins()}")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.get_allowed_origins(),
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+# Include API routers
+app.include_router(api_v1_router, prefix="/api")
 
 
 @app.get("/health", tags=["Health"])
@@ -133,7 +167,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=9000,
         reload=True,
         log_level="info"
     )

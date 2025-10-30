@@ -83,6 +83,9 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     error_message = detail if isinstance(detail, str) else "Request failed"
     error_details = detail if isinstance(detail, dict) else {}
 
+    # Always include request_id for tracking
+    error_details["request_id"] = request_id
+
     return ErrorResponse.create(
         code=error_code,
         message=error_message,
@@ -129,7 +132,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return ErrorResponse.create(
         code="VALIDATION_ERROR",
         message="Request validation failed",
-        details={"validation_errors": validation_errors},
+        details={
+            "request_id": request_id,
+            "validation_errors": validation_errors
+        },
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
     )
 

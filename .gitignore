@@ -15,9 +15,35 @@ __pycache__/
 .vscode/
 .idea/
 
+# Claude Code
+.claude/settings.local.json
+
+# MCP Servers
+.playwright-mcp/
+
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Logs
 *.log
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Expo
+apps/mobile/.expo/
+apps/mobile/node_modules/
+
+# Next.js / Vite
+apps/web/.next/
+apps/web/dist/
+apps/web/node_modules/
